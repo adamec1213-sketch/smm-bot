@@ -3,8 +3,9 @@
 Пользователь пишет по-русски, отвечай по-русски, простым языком (он не программист).
 
 ## Площадки
-- Instagram — `instagram.py` (готово). Токен: сетевой секрет окружения для `graph.instagram.com`
-  (или переменная `IG_TOKEN`). Хост `graph.instagram.com` должен быть разрешён в сети окружения.
+- Instagram — `instagram.py` (готово), аккаунт prorab.artem (ID 17841404137234059).
+  Токен системного пользователя (бессрочный): сетевой секрет окружения `smm-bot` для `graph.facebook.com`
+  (или переменная `IG_TOKEN`). Для токена «вход через Instagram» — `IG_API=instagram`.
 - Telegram, MAX — ещё не подключены.
 
 ## Правила
@@ -15,4 +16,4 @@
   файл `.agents/product-marketing.md`). Если его нет — сначала собери его
   (после подключения Instagram — по `python instagram.py profile`).
 - Тексты: навыки `social`, `copywriting`, `content-strategy`; видео — `video`; картинки — `image`.
-- Токен Instagram живёт 60 дней: продлевай `python instagram.py refresh`.
+- Токен бессрочный; `refresh` нужен только для режима `IG_API=instagram`.

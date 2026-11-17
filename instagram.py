@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Публикация в Instagram через Instagram API с входом через Instagram (graph.instagram.com).
+"""Публикация в Instagram через Meta Graph API.
+
+По умолчанию работает с токеном системного пользователя (Unified login,
+бессрочный) через graph.facebook.com. Для токена «вход через Instagram»
+задайте IG_API=instagram (тогда используется graph.instagram.com).
 
 Токен берётся из переменной IG_TOKEN. Если её нет, запрос уходит с заглушкой,
 и сетевой прокси облачной сессии подставляет сохранённый токен сам.
+ID аккаунта Instagram — переменная IG_USER_ID (по умолчанию prorab.artem).
 
 Команды:
   python instagram.py profile                     — аккаунт и последние посты
@@ -24,8 +29,10 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-API = "https://graph.instagram.com/v21.0"
+IG_LOGIN = os.environ.get("IG_API") == "instagram"
+API = "https://graph.instagram.com/v21.0" if IG_LOGIN else "https://graph.facebook.com/v21.0"
 TOKEN = os.environ.get("IG_TOKEN", "proxy-injected")
+IG_USER_ID = os.environ.get("IG_USER_ID", "17841404137234059")
 VIDEO_EXT = (".mp4", ".mov")
 
 
@@ -53,7 +60,9 @@ def call(method, path, **params):
 
 
 def me():
-    return call("GET", "me", fields="user_id,username")["user_id"]
+    if IG_LOGIN:
+        return call("GET", "me", fields="user_id,username")["user_id"]
+    return IG_USER_ID
 
 
 def wait_ready(container_id, timeout=600):
@@ -83,10 +92,11 @@ def is_video(url):
 
 
 def cmd_profile(_):
-    p = call("GET", "me", fields="user_id,username,name,biography,website,"
-             "followers_count,follows_count,media_count,account_type")
+    uid = me()
+    fields = "username,name,biography,website,followers_count,follows_count,media_count"
+    p = call("GET", "me" if IG_LOGIN else uid, fields=fields + (",account_type" if IG_LOGIN else ""))
     print(json.dumps(p, ensure_ascii=False, indent=2))
-    media = call("GET", "me/media", limit=25,
+    media = call("GET", f"{uid}/media", limit=25,
                  fields="caption,media_type,permalink,timestamp,like_count,comments_count")
     for m in media.get("data", []):
         print("\n---", m.get("timestamp", "")[:10], m.get("media_type"), m.get("permalink"),
@@ -123,7 +133,7 @@ def cmd_reel(a):
 
 
 def cmd_insights(a):
-    media = call("GET", "me/media", limit=a.n,
+    media = call("GET", f"{me()}/media", limit=a.n,
                  fields="id,caption,media_type,permalink,timestamp,like_count,comments_count")
     for m in media.get("data", []):
         metrics = "reach,saved,shares,total_interactions"
@@ -137,6 +147,8 @@ def cmd_insights(a):
 
 
 def cmd_refresh(_):
+    if not IG_LOGIN:
+        sys.exit("Токен системного пользователя бессрочный — продлевать не нужно.")
     r = call("GET", "refresh_access_token", grant_type="ig_refresh_token", access_token=TOKEN)
     days = r.get("expires_in", 0) // 86400
     print(f"Токен продлён на {days} дней. Новый токен нужно сохранить заново, если он изменился.")
