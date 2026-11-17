@@ -15,7 +15,7 @@
 - Перед созданием контента читай профиль продукта (навык `product-marketing`,
   файл `.agents/product-marketing.md`). Если его нет — сначала собери его
   (после подключения Instagram — по `python instagram.py profile`).
-- Тексты: навыки `social`, `copywriting`, `content-strategy`; видео — `video`; картинки — `image`.
+- Тексты: навыки `social`, `copywriting`, `content-strategy`; перед показом текста — прогон через `stop-slop` (убрать «ИИ-штампы»); видео — `video`; картинки — `image`.
 - Токен бессрочный; `refresh` нужен только для режима `IG_API=instagram`.
 
 ## Фирменный стиль
