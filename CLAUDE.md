@@ -17,3 +17,8 @@
   (после подключения Instagram — по `python instagram.py profile`).
 - Тексты: навыки `social`, `copywriting`, `content-strategy`; видео — `video`; картинки — `image`.
 - Токен бессрочный; `refresh` нужен только для режима `IG_API=instagram`.
+
+## Фирменный стиль
+- Чёрный фон + золото `#D9B05E` (как логотип «Поколения»), шрифт Montserrat (`brand/fonts/`).
+- Логотип: `brand/logo.jpg`. Обложки Reels: `python brand/covers.py` → `drafts/covers/`.
+- Текст обложки держать в центральной зоне 3:4 (y 240–1680 из 1920), чтобы не обрезался в сетке.
