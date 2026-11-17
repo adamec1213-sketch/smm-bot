@@ -6,7 +6,11 @@
 - Instagram — `instagram.py` (готово), аккаунт prorab.artem (ID 17841404137234059).
   Токен системного пользователя (бессрочный): сетевой секрет окружения `smm-bot` для `graph.facebook.com`
   (или переменная `IG_TOKEN`). Для токена «вход через Instagram» — `IG_API=instagram`.
-- Telegram, MAX — ещё не подключены.
+- Telegram — канал @spbpokoleniya, публикация через GitHub Actions (`.github/workflows/telegram.yml`):
+  положить JSON {"text":..., "photos":[url,...]} в `telegram/outbox/`, закоммитить и запушить в main —
+  бот опубликует и перенесёт файл в `telegram/sent/`. Токен — секрет репозитория TELEGRAM_BOT_TOKEN.
+  Тест: `gh workflow run telegram.yml -f test_message=...`.
+- MAX — ещё не подключён.
 
 ## Правила
 - Никогда не публикуй без явного «да» пользователя на конкретный текст и медиа.
