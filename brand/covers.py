@@ -63,7 +63,7 @@ im.convert('RGB').save(OUT+'1_prorab.jpg',quality=92)
 # 2 Цифра
 im=shade(fit_bg(hang,box_y=420),start=1000); im=brand(im)
 y=lines(im,1180,[('АНГАР ПОД КЛЮЧ',54,WHT,'700')]); 
-y=lines(im,y+10,[('27 000 ₽/м²',128,GOLD,'800')]); accent(im,y+40); lines(im,y+70,[('смета без доплат',54,WHT,'500')])
+y=lines(im,y+10,[('от 35 000 ₽/м²',112,GOLD,'800')]); accent(im,y+40); lines(im,y+70,[('смета без доплат',54,WHT,'500')])
 im.convert('RGB').save(OUT+'2_cifra.jpg',quality=92)
 
 # 3 Вопрос
