@@ -69,6 +69,7 @@ input.bad{border-color:var(--err)}
 .btn:active{transform:translateY(1px)}
 .btn.ghost{background:transparent;color:var(--gold);border:1.5px solid var(--gold);font-size:15px;padding:14px}
 .err{color:var(--err);font-size:13px;margin-top:10px;min-height:1px}
+.seg.bad span{border-color:var(--err)}
 .hp{position:absolute;left:-5000px;opacity:0}
 .policy{font-size:12.5px;color:var(--mut);background:var(--card2);border-radius:12px;padding:12px;margin-top:10px}
 .hidden{display:none!important}
@@ -164,6 +165,14 @@ input.bad{border-color:var(--err)}
         <label><input type="radio" name="a_floor" value="нет"><span>Не нужен</span></label>
       </div>
     </div>
+    <div style="margin-top:16px" id="a_load_box"><label class="f">Нагрузка на пол</label>
+      <select id="a_load">
+        <option value="1">До 1 т/м² — обычный склад, техника до 3 т</option>
+        <option value="3">До 3 т/м² — стеллажи, погрузчики</option>
+        <option value="5">До 5 т/м² — тяжёлое производство, грузовики</option>
+      </select>
+      <div class="hint">От нагрузки зависит толщина плиты и армирование</div>
+    </div>
     <div class="grid3" style="margin-top:16px">
       <div><label class="f">Ворота, шт</label><input type="number" id="a_gates" value="1" min="0" max="30" inputmode="numeric"></div>
       <div><label class="f">Окна, м²</label><input type="number" id="a_win" value="0" min="0" max="2000" inputmode="numeric"></div>
@@ -251,6 +260,15 @@ input.bad{border-color:var(--err)}
 
   <!-- ===== КОНТАКТЫ ===== -->
   <section class="card">
+    <h2>НДС в цене</h2>
+    <div class="seg" id="vat_box">
+      <label><input type="radio" name="vat" value="5 %"><span>НДС 5 %</span></label>
+      <label><input type="radio" name="vat" value="22 %"><span>НДС 22 %</span></label>
+    </div>
+    <div class="hint">Выберите, с каким НДС вам нужна цена: от этого зависит стоимость работ.</div>
+  </section>
+
+  <section class="card">
     <h2>Ваши контакты — и КП готово</h2>
     <div class="grid">
       <div><label class="f">Имя</label><input type="text" id="c_name" autocomplete="name" maxlength="60" placeholder="Как к вам обращаться"></div>
@@ -310,8 +328,10 @@ function hints(){
   $('a_area_hint').textContent = (L && W ? 'Площадь: ' + fmt(L*W) + ' м² · ' : '') + 'ширина 12–36 м, высота до карниза 4–14 м';
   const th = radio('p_type') === 'roof' ? [120,150] : [100,120], sel = $('p_th'), cur = sel.value;
   sel.innerHTML = th.map(t => '<option>'+t+'</option>').join(''); if (th.includes(+cur)) sel.value = cur;
+  $('a_load_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
 }
 document.querySelectorAll('#form input, #form select').forEach(e => e.addEventListener('change', hints));
+document.querySelectorAll('input[name=vat]').forEach(e => e.addEventListener('change', () => $('vat_box').classList.remove('bad')));
 ['a_len','a_wid'].forEach(id => $(id).addEventListener('input', hints));
 $('pol_link').addEventListener('click', e => { e.preventDefault(); $('policy').classList.toggle('hidden'); });
 
@@ -319,9 +339,9 @@ function params(){
   if (tab === 'angar') { const i = INS[radio('a_ins')]; return {
     L: num('a_len'), W: num('a_wid'), H: num('a_h'), wallThk: i[0], roofThk: i[1],
     fund: radio('a_fund'), floor: radio('a_floor'), gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
-    gutter: 'да', delivery: radio('a_deliv'), use: $('a_use').value }; }
-  if (tab === 'panel') return { type: radio('p_type'), thk: +$('p_th').value, area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv') };
-  return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont') };
+    gutter: 'да', delivery: radio('a_deliv'), use: $('a_use').value, floorLoad: +$('a_load').value, vat: radio('vat') }; }
+  if (tab === 'panel') return { type: radio('p_type'), thk: +$('p_th').value, area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+  return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
 function check(p){
   if (tab === 'angar') {
@@ -331,6 +351,7 @@ function check(p){
   }
   if (tab === 'panel' && (p.area < 10 || p.area > 100000)) return 'Площадь панелей — от 10 м².';
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
+  if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите НДС: 5 % или 22 %.'; }
   return '';
 }
 
