@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://adamec1213-sketch.github.io/smm-bot/sitemap.xml

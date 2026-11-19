@@ -1,0 +1,86 @@
+:root{
+  --bg:#0b0b0c; --card:#141416; --card2:#1b1b1e; --line:#2c2a26;
+  --gold:#D9B05E; --gold2:#b8924a; --txt:#f2efe8; --mut:#9c978d; --err:#ff7b6b;
+}
+.calc h1{font-size:clamp(26px,5.4vw,38px);line-height:1.15;margin:6px 0 10px;font-weight:800}
+.calc h1 b{color:var(--gold)}
+.lead{color:var(--mut);margin:0 0 22px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.tab{background:var(--card);border:1.5px solid var(--line);color:var(--txt);border-radius:14px;padding:12px 8px;font:600 14px Montserrat,sans-serif;cursor:pointer;text-align:center;line-height:1.25}
+.tab small{display:block;color:var(--mut);font-weight:500;font-size:11.5px;margin-top:3px}
+.tab.on{border-color:var(--gold);background:#1d1912}
+.tab.on small{color:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);margin:0 0 16px;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr 1fr;gap:8px}.tab{font-size:13px;padding:10px 4px}}
+label.f{display:block;font-size:13px;color:var(--mut);margin-bottom:6px;font-weight:500}
+input[type=text],input[type=tel],input[type=number],select{width:100%;background:var(--card2);border:1.5px solid var(--line);color:var(--txt);border-radius:12px;padding:12px 13px;font:500 16px Montserrat,sans-serif;outline:none;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+input:focus,select:focus{border-color:var(--gold)}
+input.bad{border-color:var(--err)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{flex:1 1 0;min-width:0}
+.seg input{display:none}
+.seg span{display:block;text-align:center;padding:11px 6px;border-radius:12px;background:var(--card2);border:1.5px solid var(--line);font-size:14px;font-weight:600;cursor:pointer;line-height:1.25;overflow-wrap:anywhere}
+.seg input:checked+span{border-color:var(--gold);color:var(--gold);background:#1d1912}
+.hint{font-size:12.5px;color:var(--mut);margin-top:6px}
+.live{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#1d1912;border:1px solid #4a3d24;border-radius:14px;padding:14px 16px;margin-top:16px}
+.live .l{color:var(--mut);font-size:13px}
+.live .v{color:var(--gold);font-weight:800;font-size:22px;white-space:nowrap}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--mut);margin-top:14px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--gold);flex:none;margin:0}
+.check a{color:var(--gold)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:17px;font:800 17px Montserrat,sans-serif;cursor:pointer;background:var(--gold);color:#16120a;margin-top:18px;letter-spacing:.2px}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--gold);border:1.5px solid var(--gold);font-size:15px;padding:14px}
+.err{color:var(--err);font-size:13px;margin-top:10px;min-height:1px}
+.seg.bad span{border-color:var(--err)}
+.hp{position:absolute;left:-5000px;opacity:0}
+.policy{font-size:12.5px;color:var(--mut);background:var(--card2);border-radius:12px;padding:12px;margin-top:10px}
+.hidden{display:none!important}
+
+/* ---------- КП (документ) ---------- */
+#result .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+#result .actions .btn{margin:0}
+.ok{background:#14201a;border:1px solid #2d5a3f;color:#bfe8cf;border-radius:14px;padding:14px 16px;font-size:14px;margin-bottom:16px}
+.doc{background:#fff;color:#1b1b1b;border-radius:16px;padding:26px 24px;font-size:13.5px}
+.doc .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:3px solid var(--gold);padding-bottom:14px;margin-bottom:16px}
+.doc .top img{width:52px;height:52px;border-radius:10px;object-fit:cover}
+.doc .co{display:flex;gap:12px;align-items:center}
+.doc .co b{font-size:16px}
+.doc .co div div{font-size:12px;color:#666}
+.doc .num{text-align:right;font-size:12px;color:#666}
+.doc .num b{display:block;color:#1b1b1b;font-size:13px}
+.doc h3{font-size:20px;margin:0 0 4px}
+.doc .sub{color:#666;margin-bottom:14px}
+.doc table{width:100%;border-collapse:collapse;margin:10px 0}
+.doc th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#8a7240;border-bottom:1.5px solid #e4d6b5;padding:6px 4px}
+.doc td{border-bottom:1px solid #eee;padding:8px 4px;vertical-align:top}
+.doc td.n,.doc th.n{text-align:right;white-space:nowrap}
+.doc .params td{border:0;padding:3px 4px}
+.doc .params td:first-child{color:#777;width:46%}
+.doc .total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#faf5ea;border:1px solid #ecdcb6;border-radius:12px;padding:14px 16px;margin:14px 0}
+.doc .total b{font-size:22px;white-space:nowrap}
+.doc .total span{color:#666}
+.doc .small{font-size:12px;color:#666}
+.doc ul{margin:6px 0 10px;padding-left:18px}
+.doc .foot{border-top:1px solid #eee;margin-top:16px;padding-top:12px;font-size:12px;color:#555}
+@media(max-width:560px){.doc{padding:18px 14px;font-size:12.5px}.doc .hide-m{display:none}}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .calc{padding:0;max-width:none}
+  .noprint,#form,.ok,#result .actions{display:none!important}
+  .doc{border-radius:0;padding:0;font-size:12px}
+  .doc .hide-m{display:table-cell!important}
+}
+.load{display:flex;gap:12px;align-items:center;justify-content:center;color:var(--mut);font-size:14px;margin-top:14px}
+.load i{width:18px;height:18px;border:2.5px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.btn[disabled]{opacity:.55;cursor:wait}
+.fail{background:#2a1714;border:1px solid #6b3127;color:#ffd2c9;border-radius:14px;padding:14px 16px;font-size:14px;margin-top:14px}
+.fail a{color:var(--gold)}
+

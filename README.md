@@ -1,6 +1,10 @@
 # smm-bot
 
-Ведение Instagram, Telegram и MAX через Claude Code.
+Ведение Instagram, Telegram и MAX через Claude Code + сайт РСК «Поколения».
+
+## Сайт
+`site/` — исходники, `python3 site/build.py` собирает `docs/` для GitHub Pages.
+Калькулятор КП — `site/kp/`, считает по Google Таблице владельца через `kp/apps-script.gs`.
 
 ## Навыки
 `.claude/skills/` — 53 маркетинговых навыка из библиотеки
