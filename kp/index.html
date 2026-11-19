@@ -25,7 +25,7 @@ const COMPANY = {
 
 // Запасные цены (если таблица недоступна). Ключи совпадают с листом «Цены».
 const DEFAULT_PRICES = {
-  // --- Ангар под ключ (основа — КП №192, склад 1440 м², Москва) ---
+  // --- Ангар под ключ: ставки для формул (площадь, стены, кровля, тоннаж считаются по размерам) ---
   angar_proekt_fix: 250000,        // проект: фиксированная часть, ₽
   angar_proekt_m2: 450,            // проект: за м² площади, ₽
   angar_fund_pol_m2: 11600,        // фундамент + плита пола 200 мм, ₽/м²
@@ -281,7 +281,7 @@ input.bad{border-color:var(--err)}
 
 <!-- ===== РЕЗУЛЬТАТ ===== -->
 <div id="result" class="hidden">
-  <div class="ok noprint">Готово! Коммерческое предложение ниже. Инженер позвонит вам, чтобы уточнить детали и зафиксировать цену.</div>
+  <div class="ok noprint">Готово! Предварительное коммерческое предложение ниже. Инженер позвонит вам, чтобы уточнить детали.</div>
   <div class="actions noprint">
     <button class="btn" id="pdf">Скачать PDF</button>
     <a class="btn ghost" id="tg" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Написать в Telegram</a>
@@ -436,13 +436,13 @@ function renderDoc(r, c, no){
   const rows = r.items.map((i,k) => '<tr><td>'+(k+1)+'. '+esc(i[0])+'</td><td class="n hide-m">'+fmt(i[1], i[2]==='т'?1:0)+' '+i[2]+'</td><td class="n hide-m">'+rub(i[3])+'</td><td class="n">'+rub(i[4])+'</td></tr>').join('');
   return '<div class="top"><div class="co"><img src="logo.jpg" alt=""><div><b>'+esc(COMPANY.name)+'</b><div>'+esc(COMPANY.phone)+' · '+esc(COMPANY.email)+'</div></div></div>'
    + '<div class="num"><b>КП № '+no+'</b>от '+ds(d)+'<br>действует до '+ds(until)+'</div></div>'
-   + '<h3>Коммерческое предложение</h3><div class="sub">'+esc(r.kind)+': '+esc(r.title)+'. Для: '+esc(c.name)+(c.city?', '+esc(c.city):'')+'</div>'
+   + '<h3>Коммерческое предложение</h3><div class="small" style="color:#8a7240;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Предварительный расчёт</div><div class="sub">'+esc(r.kind)+': '+esc(r.title)+'. Для: '+esc(c.name)+(c.city?', '+esc(c.city):'')+'</div>'
    + '<table class="params">'+r.params.map(p => '<tr><td>'+esc(p[0])+'</td><td>'+esc(p[1])+'</td></tr>').join('')+'</table>'
    + '<table><thead><tr><th>Состав работ и материалов</th><th class="n hide-m">Кол-во</th><th class="n hide-m">Цена</th><th class="n">Сумма</th></tr></thead><tbody>'+rows+'</tbody></table>'
    + '<div class="total"><span>Итого'+(r.area?' · ~'+rub(r.total/r.area)+' за м²':'')+'</span><b>'+rub(r.total)+'</b></div>'
    + '<div class="small">'+esc(P.nds_tekst)+'. '+r.notes.map(esc).join(' ')+'</div>'
    + '<p class="small" style="margin-top:12px"><b>Не входит в расчёт:</b></p><ul class="small">'+r.excluded.map(x => '<li>'+esc(x)+'</li>').join('')+'</ul>'
-   + '<div class="foot">Расчёт предварительный и сделан по введённым параметрам. Точную цену фиксируем в договоре после уточнения ТЗ и участка. Вопросы: '+esc(COMPANY.phone)+', Telegram '+esc(COMPANY.telegram.replace('https://',''))+'.</div>';
+   + '<div class="foot">Расчёт предварительный: сделан автоматически по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ и участка. Вопросы: '+esc(COMPANY.phone)+', Telegram '+esc(COMPANY.telegram.replace('https://',''))+'.</div>';
 }
 function kpText(r){
   return r.kind+': '+r.title+'\n'+r.params.map(p => p[0]+': '+p[1]).join('; ')+'\n'
