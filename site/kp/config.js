@@ -1,7 +1,7 @@
 // ===== НАСТРОЙКИ =====
 // Ссылка на веб-приложение Apps Script (…/exec) из таблицы с калькулятором.
 // Все цены и формулы — в самой таблице (листы «Справочник», «Смета»), не здесь.
-const SCRIPT_URL = '';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF0kWzYymHARchFqW3kOaWCOZLTlZunXsLuhI1TvKGqDIefXvvYsBXBbet3nfCl4aBXA/exec';
 
 const COMPANY = {
   name: 'РСК «Поколения»',
