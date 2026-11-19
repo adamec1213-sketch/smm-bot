@@ -157,7 +157,7 @@ input.bad{border-color:var(--err)}
 
 <div id="form">
   <h1>Расчёт стоимости <b>за 2 минуты</b></h1>
-  <p class="lead">Укажите параметры и получите коммерческое предложение сразу на экране. Его можно скачать в PDF.</p>
+  <p class="lead">Укажите параметры и контакты — коммерческое предложение с ценой откроется сразу. Его можно скачать в PDF.</p>
 
   <div class="tabs" role="tablist">
     <button class="tab on" data-t="angar">Ангар под ключ<small>склад, цех, автосервис</small></button>
@@ -194,7 +194,6 @@ input.bad{border-color:var(--err)}
     <div style="margin-top:16px"><label class="f">Назначение</label>
       <select id="a_use"><option>Склад</option><option>Производство / цех</option><option>Автосервис</option><option>Торговый объект</option><option>Сельское хозяйство</option><option>Другое</option></select>
     </div>
-    <div class="live"><span class="l">Предварительно</span><span class="v" id="a_live">—</span></div>
   </section>
 
   <!-- ===== ПАНЕЛИ ===== -->
@@ -225,7 +224,6 @@ input.bad{border-color:var(--err)}
       </div>
     </div>
     <div class="hint">PIR, ППС, цвет по RAL и доставку уточним при звонке.</div>
-    <div class="live"><span class="l">Предварительно</span><span class="v" id="p_live">—</span></div>
   </section>
 
   <!-- ===== МЕТАЛЛОКОНСТРУКЦИИ ===== -->
@@ -260,12 +258,11 @@ input.bad{border-color:var(--err)}
         <label><input type="radio" name="m_mont" value="1"><span>С монтажом</span></label>
       </div>
     </div>
-    <div class="live"><span class="l">Предварительно</span><span class="v" id="m_live">—</span></div>
   </section>
 
   <!-- ===== КОНТАКТЫ ===== -->
   <section class="card">
-    <h2>Куда отправить КП</h2>
+    <h2>Ваши контакты — и КП готово</h2>
     <div class="grid">
       <div><label class="f">Имя</label><input type="text" id="c_name" autocomplete="name" maxlength="60" placeholder="Как к вам обращаться"></div>
       <div><label class="f">Телефон</label><input type="tel" id="c_phone" autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
@@ -400,8 +397,7 @@ function result(){
 }
 function update(){
   const r = result();
-  $({angar:'a_live',panel:'p_live',mk:'m_live'}[tab]).textContent = rub(r.total);
-  if (tab === 'angar') $('a_area_hint').textContent = 'Площадь: ' + fmt(r.area) + ' м² · ~' + rub(r.total/r.area) + ' за м²';
+  if (tab === 'angar') $('a_area_hint').textContent = 'Площадь: ' + fmt(r.area) + ' м²';
   $('a_type_hint').textContent = radio('a_type') === 'warm' ? 'Стены и кровля — сэндвич-панели с минватой' : 'Стены и кровля — профлист, без утепления';
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
