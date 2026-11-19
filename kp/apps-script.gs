@@ -17,25 +17,67 @@ const LEADS = 'Заявки';
 const HEADERS = ['Дата', '№ КП', 'Имя', 'Телефон', 'Город', 'Направление', 'Объект',
   'Параметры', 'Сумма, ₽', '₽/м²', 'Состав КП', 'Источник', 'Статус', 'Комментарий'];
 
-// Подписи строк листа «Ввод» (столбец A), в которые сайт пишет значения (столбец B).
-const IN = {
-  L: 'Длина здания, м', W: 'Ширина (пролёт), м', H: 'Высота до карниза, м',
-  wallThk: 'Толщина стеновых панелей, мм', roofThk: 'Толщина кровельных панелей, мм',
-  fund: 'Фундамент', floor: 'Пол', gates: 'Ворота, шт', windows: 'Окна, м²', doors: 'Двери, шт',
-  flash: 'Фасонные элементы включить в смету', gutter: 'Водосток и снегозадержание',
-  delivery: 'Доставка металла и панелей', floorLoad: 'Нагрузка на пол, т/м²',
-  vat: 'НДС для клиента (выберите 5 % или 22 %)'
+// Поля листа «Ввод», которые заполняет клиент на сайте.
+// label — подпись строки в столбце A (значение пишется в столбец B), name — как поле называется в КП.
+// list — допустимые значения (как в выпадающих списках файла); min/max — границы для чисел.
+// Поле, которое клиент не заполнил, не трогаем: остаётся значение из таблицы.
+// Наценку, проектирование, надбавки, γf, массу колонн и % узлов сайт НЕ меняет — это настройки владельца.
+const YN = ['да', 'нет'];
+const FIELDS = {
+  L:         { label: 'Длина здания, м', name: 'Длина', unit: 'м', min: 6, max: 300 },
+  W:         { label: 'Ширина (пролёт), м', name: 'Ширина (пролёт)', unit: 'м', min: 12, max: 36 },
+  H:         { label: 'Высота до карниза, м', name: 'Высота до карниза', unit: 'м', min: 4, max: 14 },
+  step:      { label: 'Шаг рам, м', name: 'Шаг рам', unit: 'м', min: 3, max: 12 },
+  slope:     { label: 'Уклон кровли, градусы', name: 'Уклон кровли', unit: '°', min: 1, max: 30 },
+  snowReg:   { label: 'Снеговой район (СП 20.13330)', name: 'Снеговой район', list: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'] },
+  snowMan:   { label: 'Снеговая нагрузка вручную, кПа (пусто = по району)', name: 'Снеговая нагрузка', unit: 'кПа', min: 0.3, max: 8 },
+  steel:     { label: 'Марка стали', name: 'Марка стали', list: ['С255', 'С355'] },
+  floorLoad: { label: 'Нагрузка на пол, т/м²', name: 'Нагрузка на пол', unit: 'т/м²', min: 0.1, max: 20 },
+  soilData:  { label: 'Данные о грунте', name: 'Данные о грунте', list: ['нет геологии', 'основные данные', 'ИГИ'] },
+  soilType:  { label: 'Тип грунта', name: 'Тип грунта', list: ['не знаю', 'скальный', 'крупнообломочный', 'песок крупный', 'песок средний', 'песок мелкий', 'песок пылеватый', 'супесь', 'суглинок', 'глина', 'насыпной', 'торф'] },
+  soilState: { label: 'Состояние грунта', name: 'Состояние грунта', list: ['неизвестно', 'плотный', 'средней плотности', 'рыхлый'] },
+  water:     { label: 'Уровень грунтовых вод', name: 'Грунтовые воды', list: ['неизвестно', 'ниже 5 м', '3–5 м', '1–3 м', 'менее 1 м'] },
+  soilR:     { label: 'Расчётное сопротивление R по изысканиям, кПа (0 = по таблице)', name: 'R по изысканиям', unit: 'кПа', min: 0, max: 2000 },
+  frost:     { label: 'Глубина промерзания, м (0 = 1,4 м)', name: 'Глубина промерзания', unit: 'м', min: 0, max: 4 },
+  bearing:   { label: 'Глубина несущего слоя для свай, м (0 = сваи 6 м)', name: 'Несущий слой', unit: 'м', min: 0, max: 40 },
+  scheme:    { label: 'Схема каркаса', name: 'Схема каркаса', list: ['КП (фермы)', 'П³ (балки)'], show: { 'КП (фермы)': 'рамы с фермами', 'П³ (балки)': 'рамы из балок' } },
+  fachwerk:  { label: 'Фахверковые колонны на торцах', name: 'Фахверк на торцах', list: YN },
+  layout:    { label: 'Раскладка стеновых панелей', name: 'Раскладка стеновых панелей', list: ['вертикальная', 'горизонтальная'] },
+  base:      { label: 'Основание стен', name: 'Основание стен', list: ['швеллер'] },   // «цоколь» — нет цены в «Справочнике»
+  wallThk:   { label: 'Толщина стеновых панелей, мм', name: 'Стеновые панели', unit: 'мм', list: [100, 120] },   // толщины, для которых есть цена
+  roofThk:   { label: 'Толщина кровельных панелей, мм', name: 'Кровельные панели', unit: 'мм', list: [120, 150] },
+  ovhEnd:    { label: 'Свес кровли по торцам (с каждой стороны), м', name: 'Свес по торцам', unit: 'м', min: 0, max: 2 },
+  ovhEave:   { label: 'Свес кровли по карнизу, м (по скату)', name: 'Свес по карнизу', unit: 'м', min: 0, max: 2 },
+  fund:      { label: 'Фундамент', name: 'Фундамент', list: ['винтовые сваи', 'монолит'] },
+  piles:     { label: 'Свай под одну колонну, шт', name: 'Свай под колонну', unit: 'шт', min: 1, max: 9, int: true },
+  floor:     { label: 'Пол', name: 'Пол', list: ['монолитная плита', 'плиты ПАГ', 'нет'], show: { 'нет': 'не нужен' } },
+  gates:     { label: 'Ворота, шт', name: 'Ворота', unit: 'шт', min: 0, max: 30, int: true },
+  windows:   { label: 'Окна, м²', name: 'Окна', unit: 'м²', min: 0, max: 2000 },
+  doors:     { label: 'Двери, шт', name: 'Двери', unit: 'шт', min: 0, max: 30, int: true },
+  flash:     { label: 'Фасонные элементы включить в смету', name: 'Фасонные элементы', list: YN },
+  gutter:    { label: 'Водосток и снегозадержание', name: 'Водосток и снегозадержатели', list: YN },
+  delivery:  { label: 'Доставка металла и панелей', name: 'Доставка', list: YN },
+  vat:       { label: 'НДС для клиента (выберите 5 % или 22 %)', name: 'НДС', list: ['5 %', '22 %'] }
 };
+const IN = {};
+Object.keys(FIELDS).forEach(k => IN[k] = FIELDS[k].label);
 const IN_VAT_RATE = 'Ставка НДС (считается сама из выбора ниже)';
 const IN_DAYS = 'Срок монтажных работ, дней';
+const ALLOWED = { vat: FIELDS.vat.list, wallThk: FIELDS.wallThk.list, roofThk: FIELDS.roofThk.list };
 
-// Допустимые значения (как в выпадающих списках файла).
-const ALLOWED = {
-  wallThk: [100, 120], roofThk: [120, 150],
-  fund: ['монолит', 'винтовые сваи'], floor: ['монолитная плита', 'плиты ПАГ', 'нет'],
-  flash: ['да', 'нет'], gutter: ['да', 'нет'], delivery: ['да', 'нет'],
-  floorLoad: [1, 3, 5], vat: ['5 %', '22 %']
-};
+/** Проверить значение поля: вернуть годное значение или undefined (тогда поле не трогаем). */
+function field_(k, raw) {
+  const f = FIELDS[k];
+  if (raw === undefined || raw === null || raw === '') return undefined;
+  if (f.list) {
+    const hit = f.list.find(x => String(x) === String(raw).trim());
+    return hit === undefined ? undefined : hit;
+  }
+  const n = Number(String(raw).replace(',', '.').replace(/\s/g, ''));
+  if (!isFinite(n)) return undefined;
+  const v = clamp_(f.int ? Math.round(n) : n, f.min, f.max);
+  return Math.round(v * 100) / 100;
+}
 
 /** Запустить один раз: создаёт лист «Заявки». */
 function setup() {
@@ -58,7 +100,7 @@ function setup() {
     sh.getRange('M2:M').setDataValidation(rule);
   }
   // Пробный расчёт — проверка, что всё на месте.
-  const r = calcAngar_({ L: 30, W: 18, H: 6 });
+  const r = calcAngar_({ L: 30, W: 18, H: 6, vat: '5 %' });
   Logger.log('Пробный расчёт 30×18×6: ' + r.total + ' ₽, строк сметы: ' + r.items.length);
 }
 
@@ -136,18 +178,10 @@ function markup_(rows) {
 
 // ---------- Ангар: целиком по смете калькулятора ----------
 function calcAngar_(p) {
-  const v = {
-    L: clamp_(num_(p.L), 6, 300), W: clamp_(num_(p.W), 12, 36), H: clamp_(num_(p.H), 4, 14),
-    wallThk: ALLOWED.wallThk.indexOf(num_(p.wallThk)) >= 0 ? num_(p.wallThk) : 100,
-    roofThk: ALLOWED.roofThk.indexOf(num_(p.roofThk)) >= 0 ? num_(p.roofThk) : 120,
-    fund: ALLOWED.fund.indexOf(p.fund) >= 0 ? p.fund : 'винтовые сваи',
-    floor: ALLOWED.floor.indexOf(p.floor) >= 0 ? p.floor : 'монолитная плита',
-    gates: clamp_(Math.round(num_(p.gates)), 0, 30), windows: clamp_(num_(p.windows), 0, 2000),
-    doors: clamp_(Math.round(num_(p.doors)), 0, 30),
-    flash: 'да', gutter: p.gutter === 'нет' ? 'нет' : 'да', delivery: p.delivery === 'нет' ? 'нет' : 'да',
-    vat: vat_(p)
-  };
-  if (v.floor === 'монолитная плита') v.floorLoad = ALLOWED.floorLoad.indexOf(num_(p.floorLoad)) >= 0 ? num_(p.floorLoad) : 1;
+  const v = {};
+  Object.keys(FIELDS).forEach(k => { const x = field_(k, p[k]); if (x !== undefined) v[k] = x; });
+  ['L', 'W', 'H'].forEach(k => { if (v[k] === undefined) throw new Error('не указан размер: ' + FIELDS[k].name); });
+  if (v.vat === undefined) v.vat = '5 %';
   return withInputs_(v, (sh, rows) => {
     const sm = smeta_();
     const k = 1 + markup_(sm);
@@ -160,14 +194,20 @@ function calcAngar_(p) {
     const days = num_(sh.getRange(rows[IN_DAYS], 2).getValue());
     const vatTotal = smetaTotal_(sm, 'в том числе НДС');
     const missing = sm.slice(start, end).filter(r => num_(r.qty) > 0 && r.price === '').map(r => r.name);
+    const params = [['Размеры (Д × Ш × В)', v.L + ' × ' + v.W + ' × ' + v.H + ' м'], ['Площадь', area + ' м²']];
+    Object.keys(v).forEach(key => {
+      if (['L', 'W', 'H'].indexOf(key) >= 0) return;
+      const f = FIELDS[key];
+      const val = f.show && f.show[v[key]] ? f.show[v[key]] : v[key];
+      params.push([f.name, (typeof val === 'number' ? String(val).replace('.', ',') : String(val)) + (f.unit ? (f.unit === '°' ? '' : ' ') + f.unit : '')]);
+    });
+    if (p.use) params.push(['Назначение', String(p.use).slice(0, 40)]);
+    const notes = ['Цены с НДС ' + v.vat + ', в т. ч. НДС ' + rub_(vatTotal) + '.'];
+    if (days) notes.push('Срок монтажных работ — около ' + days + ' рабочих дней.');
+    if (missing.length) notes.push('Стоимость позиций «' + missing.join('», «') + '» в расчёт не вошла — её уточнит инженер.');
     return {
       kind: 'Ангар под ключ', area: area, total: total, items: items, missing: missing,
-      title: v.L + ' × ' + v.W + ' м, высота ' + v.H + ' м',
-      params: [['Размеры (Д × Ш × В)', v.L + ' × ' + v.W + ' × ' + v.H + ' м'], ['Площадь', area + ' м²'],
-        ['Стены / кровля', 'сэндвич-панели ' + v.wallThk + ' / ' + v.roofThk + ' мм'],
-        ['Фундамент', v.fund], ['Пол', v.floor === 'нет' ? 'не нужен' : v.floor + (v.floorLoad ? ', нагрузка до ' + v.floorLoad + ' т/м²' : '')],
-        ['Назначение', String(p.use || '—').slice(0, 40)], ['НДС', v.vat]],
-      notes: ['Цены с НДС ' + v.vat + ', в т. ч. НДС ' + rub_(vatTotal) + '.', days ? 'Срок монтажных работ — около ' + days + ' рабочих дней.' : ''],
+      title: v.L + ' × ' + v.W + ' м, высота ' + v.H + ' м', params: params, notes: notes,
       excluded: ['топпинг пола, огнезащита, перегородки — по запросу', 'инженерные системы: отопление, вентиляция, электрика, водопровод',
         'подключение к сетям, благоустройство']
     };

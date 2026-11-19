@@ -18,14 +18,13 @@ document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () =>
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('[data-pane]').forEach(x => x.classList.toggle('hidden', x.dataset.pane !== tab));
 }));
-const INS = {std:[100,120], plus:[120,150]};
 function hints(){
-  const i = INS[radio('a_ins')]; $('a_ins_hint').textContent = 'Стены ' + i[0] + ' мм, кровля ' + i[1] + ' мм';
   const L = num('a_len'), W = num('a_wid');
-  $('a_area_hint').textContent = (L && W ? 'Площадь: ' + fmt(L*W) + ' м² · ' : '') + 'ширина 12–36 м, высота до карниза 4–14 м';
+  $('a_area_hint').textContent = (L && W ? 'Площадь: ' + fmt(L*W) + ' м² · ' : '') + 'ширина (пролёт) 12–36 м, высота до карниза 4–14 м';
   const th = radio('p_type') === 'roof' ? [120,150] : [100,120], sel = $('p_th'), cur = sel.value;
   sel.innerHTML = th.map(t => '<option>'+t+'</option>').join(''); if (th.includes(+cur)) sel.value = cur;
   $('a_load_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
+  $('a_piles_box').classList.toggle('hidden', radio('a_fund') !== 'винтовые сваи');
 }
 document.querySelectorAll('#form input, #form select').forEach(e => e.addEventListener('change', hints));
 document.querySelectorAll('input[name=vat]').forEach(e => e.addEventListener('change', () => $('vat_box').classList.remove('bad')));
@@ -33,10 +32,17 @@ document.querySelectorAll('input[name=vat]').forEach(e => e.addEventListener('ch
 $('pol_link').addEventListener('click', e => { e.preventDefault(); $('policy').classList.toggle('hidden'); });
 
 function params(){
-  if (tab === 'angar') { const i = INS[radio('a_ins')]; return {
-    L: num('a_len'), W: num('a_wid'), H: num('a_h'), wallThk: i[0], roofThk: i[1],
-    fund: radio('a_fund'), floor: radio('a_floor'), gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
-    gutter: 'да', delivery: radio('a_deliv'), use: $('a_use').value, floorLoad: +$('a_load').value, vat: radio('vat') }; }
+  if (tab === 'angar') {
+    const p = { L: num('a_len'), W: num('a_wid'), H: num('a_h'), use: $('a_use').value, snowReg: $('a_snowReg').value,
+      wallThk: radio('a_wallThk'), roofThk: radio('a_roofThk'), fund: radio('a_fund'), floor: radio('a_floor'),
+      gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
+      flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
+    if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
+    if (p.floor === 'монолитная плита' && $('a_floorLoad').value) p.floorLoad = num('a_floorLoad');
+    // «Для инженеров»: отправляем только то, что клиент заполнил, остальное — как в таблице
+    document.querySelectorAll('.more [data-f]').forEach(e => { if (e.value !== '') p[e.id.slice(2)] = e.value.replace(',', '.'); });
+    return p;
+  }
   if (tab === 'panel') return { type: radio('p_type'), thk: +$('p_th').value, area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
