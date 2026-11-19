@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Расчёт стоимости — РСК «Поколения»</title>
+<meta name="description" content="Ангары под ключ, сэндвич-панели, металлоконструкции. Коммерческое предложение за 2 минуты.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+// ===== НАСТРОЙКИ =====
+// Ссылка на веб-приложение Apps Script (…/exec). Цены ниже — запасные:
+// основные берутся из листа «Цены» в Google Таблице, меняйте их там.
+const SCRIPT_URL = '';
+
+const COMPANY = {
+  name: 'РСК «Поколения»',
+  phone: '+7 981 908-22-97',
+  phoneHref: 'tel:+79819082297',
+  email: 'rsk-47@bk.ru',
+  telegram: 'https://t.me/spbpokoleniya',
+  instagram: 'https://instagram.com/prorab.artem'
+};
+
+// Запасные цены (если таблица недоступна). Ключи совпадают с листом «Цены».
+const DEFAULT_PRICES = {
+  // --- Ангар под ключ (основа — КП №192, склад 1440 м², Москва) ---
+  angar_proekt_fix: 250000,        // проект: фиксированная часть, ₽
+  angar_proekt_m2: 450,            // проект: за м² площади, ₽
+  angar_fund_pol_m2: 11600,        // фундамент + плита пола 200 мм, ₽/м²
+  angar_metall_t: 175000,          // металлокаркас: металл + изготовление + доставка, ₽/т
+  angar_metall_kg_baza: 30,        // расход металла: база, кг/м²
+  angar_metall_kg_prolet: 0.8,     // + кг/м² за каждый метр пролёта
+  angar_metall_kg_vysota: 1.5,     // + кг/м² за каждый метр высоты выше 6 м
+  angar_panel_stena_m2: 4100,      // стеновые сэндвич-панели 120 мм с фасонкой, ₽/м²
+  angar_panel_krovlya_m2: 4500,    // кровельные сэндвич-панели 150 мм, водосток, снегозадержание, ₽/м²
+  angar_proflist_m2: 1600,         // холодный ангар: профлист с фасонкой, ₽/м²
+  angar_montazh_t: 70000,          // монтаж каркаса с техникой, ₽/т
+  angar_montazh_panel_m2: 1700,    // монтаж сэндвич-панелей, ₽/м²
+  angar_montazh_proflist_m2: 900,  // монтаж профлиста, ₽/м²
+  angar_vorota_sht: 350000,        // секционные ворота 3×3,5 м с автоматикой, ₽/шт
+  angar_okna_m2: 18000,            // окна ПВХ, ₽/м²
+  // --- Сэндвич-панели (минвата), ₽/м² по толщине ---
+  panel_50: 2700, panel_80: 2950, panel_100: 3150, panel_120: 3350,
+  panel_150: 3700, panel_200: 4300, panel_250: 4900,
+  panel_krovlya_dop: 350,          // надбавка за кровельную панель, ₽/м²
+  panel_fason_proc: 12,            // фасонные элементы, % от суммы панелей
+  // --- Металлоконструкции, ₽/т (металл + изготовление + грунт) ---
+  mk_karkas: 165000, mk_fermy: 175000, mk_kolonny: 160000,
+  mk_lestnicy: 230000, mk_navesy: 185000, mk_nestandart: 200000,
+  mk_kmd_t: 9000,                  // разработка КМД, если нет чертежей, ₽/т
+  mk_emal_t: 15000,                // грунт + эмаль, ₽/т
+  mk_cink_t: 45000,                // горячее цинкование, ₽/т
+  mk_montazh_t: 70000,             // монтаж, ₽/т
+  // --- Общее ---
+  kp_srok_dney: 10,                // сколько дней действует КП
+  nds_tekst: 'Цены указаны без НДС'
+};
+</script>
+<style>
+:root{
+  --bg:#0b0b0c; --card:#141416; --card2:#1b1b1e; --line:#2c2a26;
+  --gold:#D9B05E; --gold2:#b8924a; --txt:#f2efe8; --mut:#9c978d; --err:#ff7b6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--txt);font-family:Montserrat,system-ui,sans-serif;font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+header img{width:58px;height:58px;border-radius:12px;object-fit:cover}
+header .t1{font-weight:800;font-size:18px;letter-spacing:.3px}
+header .t2{color:var(--mut);font-size:13px}
+h1{font-size:clamp(24px,5.4vw,34px);line-height:1.15;margin:6px 0 10px;font-weight:800}
+h1 b{color:var(--gold)}
+.lead{color:var(--mut);margin:0 0 22px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.tab{background:var(--card);border:1.5px solid var(--line);color:var(--txt);border-radius:14px;padding:12px 8px;font:600 14px Montserrat,sans-serif;cursor:pointer;text-align:center;line-height:1.25}
+.tab small{display:block;color:var(--mut);font-weight:500;font-size:11.5px;margin-top:3px}
+.tab.on{border-color:var(--gold);background:#1d1912}
+.tab.on small{color:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold);margin:0 0 16px;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr 1fr;gap:8px}.tab{font-size:13px;padding:10px 4px}}
+label.f{display:block;font-size:13px;color:var(--mut);margin-bottom:6px;font-weight:500}
+input[type=text],input[type=tel],input[type=number],select{width:100%;background:var(--card2);border:1.5px solid var(--line);color:var(--txt);border-radius:12px;padding:12px 13px;font:500 16px Montserrat,sans-serif;outline:none;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+input:focus,select:focus{border-color:var(--gold)}
+input.bad{border-color:var(--err)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{flex:1 1 0;min-width:0}
+.seg input{display:none}
+.seg span{display:block;text-align:center;padding:11px 6px;border-radius:12px;background:var(--card2);border:1.5px solid var(--line);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.seg input:checked+span{border-color:var(--gold);color:var(--gold);background:#1d1912}
+.hint{font-size:12.5px;color:var(--mut);margin-top:6px}
+.live{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#1d1912;border:1px solid #4a3d24;border-radius:14px;padding:14px 16px;margin-top:16px}
+.live .l{color:var(--mut);font-size:13px}
+.live .v{color:var(--gold);font-weight:800;font-size:22px;white-space:nowrap}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--mut);margin-top:14px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--gold);flex:none;margin:0}
+.check a{color:var(--gold)}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:17px;font:800 17px Montserrat,sans-serif;cursor:pointer;background:var(--gold);color:#16120a;margin-top:18px;letter-spacing:.2px}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--gold);border:1.5px solid var(--gold);font-size:15px;padding:14px}
+.err{color:var(--err);font-size:13px;margin-top:10px;min-height:1px}
+.hp{position:absolute;left:-5000px;opacity:0}
+.policy{font-size:12.5px;color:var(--mut);background:var(--card2);border-radius:12px;padding:12px;margin-top:10px}
+.hidden{display:none!important}
+
+/* ---------- КП (документ) ---------- */
+#result .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+#result .actions .btn{margin:0}
+.ok{background:#14201a;border:1px solid #2d5a3f;color:#bfe8cf;border-radius:14px;padding:14px 16px;font-size:14px;margin-bottom:16px}
+.doc{background:#fff;color:#1b1b1b;border-radius:16px;padding:26px 24px;font-size:13.5px}
+.doc .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:3px solid var(--gold);padding-bottom:14px;margin-bottom:16px}
+.doc .top img{width:52px;height:52px;border-radius:10px;object-fit:cover}
+.doc .co{display:flex;gap:12px;align-items:center}
+.doc .co b{font-size:16px}
+.doc .co div div{font-size:12px;color:#666}
+.doc .num{text-align:right;font-size:12px;color:#666}
+.doc .num b{display:block;color:#1b1b1b;font-size:13px}
+.doc h3{font-size:20px;margin:0 0 4px}
+.doc .sub{color:#666;margin-bottom:14px}
+.doc table{width:100%;border-collapse:collapse;margin:10px 0}
+.doc th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#8a7240;border-bottom:1.5px solid #e4d6b5;padding:6px 4px}
+.doc td{border-bottom:1px solid #eee;padding:8px 4px;vertical-align:top}
+.doc td.n,.doc th.n{text-align:right;white-space:nowrap}
+.doc .params td{border:0;padding:3px 4px}
+.doc .params td:first-child{color:#777;width:46%}
+.doc .total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#faf5ea;border:1px solid #ecdcb6;border-radius:12px;padding:14px 16px;margin:14px 0}
+.doc .total b{font-size:22px;white-space:nowrap}
+.doc .total span{color:#666}
+.doc .small{font-size:12px;color:#666}
+.doc ul{margin:6px 0 10px;padding-left:18px}
+.doc .foot{border-top:1px solid #eee;margin-top:16px;padding-top:12px;font-size:12px;color:#555}
+@media(max-width:560px){.doc{padding:18px 14px;font-size:12.5px}.doc .hide-m{display:none}}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .wrap{padding:0;max-width:none}
+  .noprint,header,#form,.ok,#result .actions{display:none!important}
+  .doc{border-radius:0;padding:0;font-size:12px}
+  .doc .hide-m{display:table-cell!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="noprint">
+  <img src="logo.jpg" alt="">
+  <div><div class="t1">РСК «Поколения»</div><div class="t2">Строим под ключ · 15+ лет · 200+ объектов</div></div>
+</header>
+
+<div id="form">
+  <h1>Расчёт стоимости <b>за 2 минуты</b></h1>
+  <p class="lead">Укажите параметры и получите коммерческое предложение сразу на экране. Его можно скачать в PDF.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-t="angar">Ангар под ключ<small>склад, цех, автосервис</small></button>
+    <button class="tab" data-t="panel">Сэндвич-панели<small>закупка и поставка</small></button>
+    <button class="tab" data-t="mk">Металло&shy;конструкции<small>производство</small></button>
+  </div>
+
+  <!-- ===== АНГАР ===== -->
+  <section class="card" data-pane="angar">
+    <h2>Параметры здания</h2>
+    <div class="grid3">
+      <div><label class="f">Длина, м</label><input type="number" id="a_len" value="48" min="6" max="300" inputmode="decimal"></div>
+      <div><label class="f">Ширина, м</label><input type="number" id="a_wid" value="24" min="6" max="60" inputmode="decimal"></div>
+      <div><label class="f">Высота, м</label><input type="number" id="a_h" value="8" min="3" max="18" inputmode="decimal"></div>
+    </div>
+    <div class="hint" id="a_area_hint"></div>
+    <div style="margin-top:16px"><label class="f">Тип здания</label>
+      <div class="seg">
+        <label><input type="radio" name="a_type" value="warm" checked><span>Тёплый</span></label>
+        <label><input type="radio" name="a_type" value="cold"><span>Холодный</span></label>
+      </div>
+      <div class="hint" id="a_type_hint">Стены и кровля — сэндвич-панели с минватой</div>
+    </div>
+    <div style="margin-top:16px"><label class="f">Фундамент и бетонный пол</label>
+      <div class="seg">
+        <label><input type="radio" name="a_fund" value="1" checked><span>Нужны</span></label>
+        <label><input type="radio" name="a_fund" value="0"><span>Уже есть</span></label>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div><label class="f">Ворота с автоматикой, шт</label><input type="number" id="a_gates" value="1" min="0" max="30" inputmode="numeric"></div>
+      <div><label class="f">Окна, м²</label><input type="number" id="a_win" value="0" min="0" max="2000" inputmode="numeric"></div>
+    </div>
+    <div style="margin-top:16px"><label class="f">Назначение</label>
+      <select id="a_use"><option>Склад</option><option>Производство / цех</option><option>Автосервис</option><option>Торговый объект</option><option>Сельское хозяйство</option><option>Другое</option></select>
+    </div>
+    <div class="live"><span class="l">Предварительно</span><span class="v" id="a_live">—</span></div>
+  </section>
+
+  <!-- ===== ПАНЕЛИ ===== -->
+  <section class="card hidden" data-pane="panel">
+    <h2>Сэндвич-панели (минвата)</h2>
+    <div><label class="f">Назначение</label>
+      <div class="seg">
+        <label><input type="radio" name="p_type" value="wall" checked><span>Стеновые</span></label>
+        <label><input type="radio" name="p_type" value="roof"><span>Кровельные</span></label>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div><label class="f">Толщина, мм</label>
+        <select id="p_th"><option>50</option><option>80</option><option selected>100</option><option>120</option><option>150</option><option>200</option><option>250</option></select>
+      </div>
+      <div><label class="f">Площадь, м²</label><input type="number" id="p_area" value="500" min="10" max="100000" inputmode="numeric"></div>
+    </div>
+    <div style="margin-top:16px"><label class="f">Фасонные элементы (уголки, нащельники, отливы)</label>
+      <div class="seg">
+        <label><input type="radio" name="p_fason" value="1" checked><span>Нужны</span></label>
+        <label><input type="radio" name="p_fason" value="0"><span>Не нужны</span></label>
+      </div>
+    </div>
+    <div style="margin-top:16px"><label class="f">Монтаж</label>
+      <div class="seg">
+        <label><input type="radio" name="p_mont" value="0" checked><span>Только поставка</span></label>
+        <label><input type="radio" name="p_mont" value="1"><span>С монтажом</span></label>
+      </div>
+    </div>
+    <div class="hint">PIR, ППС, цвет по RAL и доставку уточним при звонке.</div>
+    <div class="live"><span class="l">Предварительно</span><span class="v" id="p_live">—</span></div>
+  </section>
+
+  <!-- ===== МЕТАЛЛОКОНСТРУКЦИИ ===== -->
+  <section class="card hidden" data-pane="mk">
+    <h2>Металлоконструкции</h2>
+    <div><label class="f">Что изготовить</label>
+      <select id="m_kind">
+        <option value="karkas">Каркас здания</option>
+        <option value="fermy">Фермы и балки</option>
+        <option value="kolonny">Колонны</option>
+        <option value="lestnicy">Лестницы, площадки, ограждения</option>
+        <option value="navesy">Навесы, козырьки</option>
+        <option value="nestandart">Нестандартные конструкции</option>
+      </select>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div><label class="f">Масса, тонн</label><input type="number" id="m_t" value="10" min="0.1" max="5000" step="0.1" inputmode="decimal"><div class="hint">Не знаете точно — укажите примерно</div></div>
+      <div><label class="f">Чертежи КМ/КМД</label>
+        <select id="m_kmd"><option value="1">Есть</option><option value="0">Нет, нужно разработать</option></select>
+      </div>
+    </div>
+    <div style="margin-top:16px"><label class="f">Защитное покрытие</label>
+      <div class="seg">
+        <label><input type="radio" name="m_cov" value="grunt" checked><span>Грунт</span></label>
+        <label><input type="radio" name="m_cov" value="emal"><span>Грунт + эмаль</span></label>
+        <label><input type="radio" name="m_cov" value="cink"><span>Цинкование</span></label>
+      </div>
+    </div>
+    <div style="margin-top:16px"><label class="f">Монтаж</label>
+      <div class="seg">
+        <label><input type="radio" name="m_mont" value="0" checked><span>Без монтажа</span></label>
+        <label><input type="radio" name="m_mont" value="1"><span>С монтажом</span></label>
+      </div>
+    </div>
+    <div class="live"><span class="l">Предварительно</span><span class="v" id="m_live">—</span></div>
+  </section>
+
+  <!-- ===== КОНТАКТЫ ===== -->
+  <section class="card">
+    <h2>Куда отправить КП</h2>
+    <div class="grid">
+      <div><label class="f">Имя</label><input type="text" id="c_name" autocomplete="name" maxlength="60" placeholder="Как к вам обращаться"></div>
+      <div><label class="f">Телефон</label><input type="tel" id="c_phone" autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
+    </div>
+    <div style="margin-top:14px"><label class="f">Город / регион объекта</label><input type="text" id="c_city" maxlength="80" placeholder="Например, Москва или Ленинградская обл."></div>
+    <input type="text" id="c_site" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="check"><input type="checkbox" id="c_agree"><span>Согласен на обработку персональных данных для подготовки предложения. <a href="#" id="pol_link">Подробнее</a></span></label>
+    <div class="policy hidden" id="policy">Имя, телефон и город нужны только для того, чтобы подготовить предложение и связаться с вами по нему. Данные не передаются третьим лицам. Отозвать согласие можно письмом на <span class="em"></span>.</div>
+    <button class="btn" id="go">Получить КП</button>
+    <div class="err" id="err"></div>
+  </section>
+</div>
+
+<!-- ===== РЕЗУЛЬТАТ ===== -->
+<div id="result" class="hidden">
+  <div class="ok noprint">Готово! Коммерческое предложение ниже. Инженер позвонит вам, чтобы уточнить детали и зафиксировать цену.</div>
+  <div class="actions noprint">
+    <button class="btn" id="pdf">Скачать PDF</button>
+    <a class="btn ghost" id="tg" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Написать в Telegram</a>
+  </div>
+  <div class="doc" id="doc"></div>
+  <div class="actions noprint">
+    <a class="btn ghost" id="call" style="text-align:center;text-decoration:none">Позвонить</a>
+    <button class="btn ghost" id="again">Новый расчёт</button>
+  </div>
+</div>
+
+</div>
+<script>
+(function(){
+const P = Object.assign({}, DEFAULT_PRICES);
+const $ = id => document.getElementById(id);
+const num = (id, def) => { const v = parseFloat(String($(id).value).replace(',', '.')); return isFinite(v) ? v : def; };
+const radio = n => (document.querySelector('input[name="'+n+'"]:checked')||{}).value;
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const rub = v => Math.round(v).toLocaleString('ru-RU').replace(/,/g,' ') + ' ₽';
+const fmt = (v,d) => Number(v.toFixed(d||0)).toLocaleString('ru-RU');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const src = (new URLSearchParams(location.search).get('src') || (document.referrer ? 'сайт' : 'прямой заход')).slice(0,40);
+
+document.querySelectorAll('.em').forEach(e => e.textContent = COMPANY.email);
+$('tg').href = COMPANY.telegram; $('call').href = COMPANY.phoneHref;
+$('call').textContent = 'Позвонить ' + COMPANY.phone;
+
+// Цены из Google Таблицы
+if (SCRIPT_URL) {
+  fetch(SCRIPT_URL + '?action=prices').then(r => r.json()).then(j => {
+    if (j && j.prices) for (const k in j.prices) if (k in P && j.prices[k] !== '' && j.prices[k] !== null) {
+      P[k] = typeof DEFAULT_PRICES[k] === 'number' ? Number(j.prices[k]) : String(j.prices[k]);
+    }
+    update();
+  }).catch(() => {});
+}
+
+// ---------- Расчёты ----------
+function calcAngar(){
+  const L = clamp(num('a_len',48),6,300), W = clamp(num('a_wid',24),6,60), H = clamp(num('a_h',8),3,18);
+  const warm = radio('a_type') === 'warm', fund = radio('a_fund') === '1';
+  const gates = clamp(Math.round(num('a_gates',0)),0,30), win = clamp(num('a_win',0),0,2000);
+  const S = L*W;
+  const roof = S*1.005;                       // двускатная кровля, уклон 10%
+  const wall = 2*(L+W)*H + 0.05*W*W;          // стены + фронтоны
+  const kg = P.angar_metall_kg_baza + P.angar_metall_kg_prolet*W + P.angar_metall_kg_vysota*Math.max(0,H-6);
+  const t = S*kg/1000;
+  const it = [];
+  it.push(['Проектирование: КМ, КМД, КЖ, расчёт нагрузок под регион', 1, 'компл', P.angar_proekt_fix + P.angar_proekt_m2*S]);
+  if (fund) it.push(['Фундамент (монолитный ростверк) и плита пола 200 мм, двойное армирование', S, 'м²', P.angar_fund_pol_m2]);
+  it.push(['Металлокаркас: металл, изготовление по КМД, доставка', t, 'т', P.angar_metall_t]);
+  if (warm) {
+    it.push(['Стеновые сэндвич-панели 120 мм (минвата) с фасонными элементами', wall, 'м²', P.angar_panel_stena_m2]);
+    it.push(['Кровельные сэндвич-панели 150 мм, водосток, снегозадержатели', roof, 'м²', P.angar_panel_krovlya_m2]);
+  } else {
+    it.push(['Стены: профлист с фасонными элементами', wall, 'м²', P.angar_proflist_m2]);
+    it.push(['Кровля: профлист, водосток, снегозадержатели', roof, 'м²', P.angar_proflist_m2]);
+  }
+  if (gates) it.push(['Секционные ворота 3×3,5 м с автоматикой', gates, 'шт', P.angar_vorota_sht]);
+  if (win) it.push(['Окна ПВХ', win, 'м²', P.angar_okna_m2]);
+  it.push(['Монтаж каркаса с краном и техникой', t, 'т', P.angar_montazh_t]);
+  it.push([warm ? 'Монтаж сэндвич-панелей и фасонных элементов' : 'Монтаж профлиста и фасонных элементов', wall+roof, 'м²', warm ? P.angar_montazh_panel_m2 : P.angar_montazh_proflist_m2]);
+  return {
+    kind: 'Ангар под ключ',
+    title: (warm?'Тёплый':'Холодный') + ' ' + $('a_use').value.toLowerCase().replace('производство / цех','цех') + ' ' + fmt(S) + ' м²',
+    params: [['Размеры (Д × Ш × В)', fmt(L,1)+' × '+fmt(W,1)+' × '+fmt(H,1)+' м'], ['Площадь', fmt(S)+' м²'],
+             ['Тип', warm ? 'тёплый, сэндвич-панели' : 'холодный, профлист'], ['Фундамент и пол', fund ? 'входят' : 'есть у заказчика'],
+             ['Назначение', $('a_use').value]],
+    items: it, area: S,
+    notes: ['Гарантия на работы — 24 месяца.'],
+    excluded: ['топпинг пола, сваи (если нужны по геологии)', 'инженерные системы: отопление, вентиляция, электрика, водопровод', 'огнезащита, двери, подключение к сетям, благоустройство', 'доставка за пределы Москвы, Санкт-Петербурга и их областей']
+  };
+}
+function calcPanel(){
+  const roof = radio('p_type') === 'roof', th = $('p_th').value, A = clamp(num('p_area',500),10,100000);
+  const fason = radio('p_fason') === '1', mont = radio('p_mont') === '1';
+  const price = (P['panel_'+th] || 0) + (roof ? P.panel_krovlya_dop : 0);
+  const it = [[(roof?'Кровельные':'Стеновые')+' сэндвич-панели '+th+' мм, минвата', A, 'м²', price]];
+  if (fason) it.push(['Фасонные элементы (уголки, нащельники, отливы)', 1, 'компл', A*price*P.panel_fason_proc/100]);
+  if (mont) it.push(['Монтаж панелей и фасонных элементов', A, 'м²', P.angar_montazh_panel_m2]);
+  return {
+    kind: 'Сэндвич-панели',
+    title: (roof?'Кровельные':'Стеновые')+' сэндвич-панели '+th+' мм — '+fmt(A)+' м²',
+    params: [['Тип', (roof?'кровельные':'стеновые')+', минеральная вата'], ['Толщина', th+' мм'], ['Площадь', fmt(A)+' м²'], ['Фасонные элементы', fason?'нужны':'не нужны'], ['Монтаж', mont?'нужен':'только поставка']],
+    items: it, area: 0,
+    notes: ['Цвет по RAL, PIR- и ППС-панели — по запросу.'],
+    excluded: ['доставка (считаем по адресу объекта)', 'крепёж и уплотнители — по спецификации']
+  };
+}
+function calcMk(){
+  const kind = $('m_kind').value, kindName = $('m_kind').selectedOptions[0].text;
+  const T = clamp(num('m_t',10),0.1,5000), kmd = $('m_kmd').value === '1', cov = radio('m_cov'), mont = radio('m_mont') === '1';
+  const it = [[kindName+': металл, изготовление, грунтовка', T, 'т', P['mk_'+kind]]];
+  if (!kmd) it.push(['Разработка чертежей КМД', T, 'т', P.mk_kmd_t]);
+  if (cov === 'emal') it.push(['Окраска эмалью по грунту', T, 'т', P.mk_emal_t]);
+  if (cov === 'cink') it.push(['Горячее цинкование', T, 'т', P.mk_cink_t]);
+  if (mont) it.push(['Монтаж металлоконструкций', T, 'т', P.mk_montazh_t]);
+  const covName = {grunt:'грунт', emal:'грунт + эмаль', cink:'горячее цинкование'}[cov];
+  return {
+    kind: 'Металлоконструкции',
+    title: kindName + ' — ' + fmt(T,1) + ' т',
+    params: [['Изделие', kindName], ['Масса', fmt(T,1)+' т'], ['Чертежи КМ/КМД', kmd?'есть':'разрабатываем мы'], ['Покрытие', covName], ['Монтаж', mont?'нужен':'не нужен']],
+    items: it, area: 0,
+    notes: ['Итоговая масса уточняется по чертежам КМД.'],
+    excluded: ['доставка (считаем по адресу объекта)']
+  };
+}
+const CALC = {angar: calcAngar, panel: calcPanel, mk: calcMk};
+let tab = 'angar';
+function result(){
+  const r = CALC[tab]();
+  r.items = r.items.map(([n,q,u,p]) => [n,q,u,p,q*p]);
+  r.total = Math.round(r.items.reduce((s,i) => s+i[4], 0)/1000)*1000;
+  return r;
+}
+function update(){
+  const r = result();
+  $({angar:'a_live',panel:'p_live',mk:'m_live'}[tab]).textContent = rub(r.total);
+  if (tab === 'angar') $('a_area_hint').textContent = 'Площадь: ' + fmt(r.area) + ' м² · ~' + rub(r.total/r.area) + ' за м²';
+  $('a_type_hint').textContent = radio('a_type') === 'warm' ? 'Стены и кровля — сэндвич-панели с минватой' : 'Стены и кровля — профлист, без утепления';
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+  tab = b.dataset.t;
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('[data-pane]').forEach(x => x.classList.toggle('hidden', x.dataset.pane !== tab));
+  update();
+}));
+document.querySelectorAll('[data-pane] input,[data-pane] select').forEach(e => { e.addEventListener('input', update); e.addEventListener('change', update); });
+$('pol_link').addEventListener('click', e => { e.preventDefault(); $('policy').classList.toggle('hidden'); });
+
+// ---------- Телефон ----------
+const phone = $('c_phone');
+function digits(){ let d = phone.value.replace(/\D/g,''); if (d[0]==='8') d='7'+d.slice(1); if (d && d[0]!=='7') d='7'+d; return d.slice(0,11); }
+phone.addEventListener('input', () => {
+  const d = digits(); if (!d) { phone.value=''; return; }
+  let s = '+7'; const r = d.slice(1);
+  if (r.length) s += ' (' + r.slice(0,3); if (r.length>=3) s += ')';
+  if (r.length>3) s += ' ' + r.slice(3,6); if (r.length>6) s += '-' + r.slice(6,8); if (r.length>8) s += '-' + r.slice(8,10);
+  phone.value = s; phone.classList.remove('bad');
+});
+$('c_name').addEventListener('input', e => e.target.classList.remove('bad'));
+
+// ---------- КП ----------
+function kpNumber(){
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate())+'-'+Math.floor(1000+Math.random()*9000);
+}
+function renderDoc(r, c, no){
+  const d = new Date(), until = new Date(d.getTime() + P.kp_srok_dney*864e5);
+  const ds = x => x.toLocaleDateString('ru-RU');
+  const rows = r.items.map((i,k) => '<tr><td>'+(k+1)+'. '+esc(i[0])+'</td><td class="n hide-m">'+fmt(i[1], i[2]==='т'?1:0)+' '+i[2]+'</td><td class="n hide-m">'+rub(i[3])+'</td><td class="n">'+rub(i[4])+'</td></tr>').join('');
+  return '<div class="top"><div class="co"><img src="logo.jpg" alt=""><div><b>'+esc(COMPANY.name)+'</b><div>'+esc(COMPANY.phone)+' · '+esc(COMPANY.email)+'</div></div></div>'
+   + '<div class="num"><b>КП № '+no+'</b>от '+ds(d)+'<br>действует до '+ds(until)+'</div></div>'
+   + '<h3>Коммерческое предложение</h3><div class="sub">'+esc(r.kind)+': '+esc(r.title)+'. Для: '+esc(c.name)+(c.city?', '+esc(c.city):'')+'</div>'
+   + '<table class="params">'+r.params.map(p => '<tr><td>'+esc(p[0])+'</td><td>'+esc(p[1])+'</td></tr>').join('')+'</table>'
+   + '<table><thead><tr><th>Состав работ и материалов</th><th class="n hide-m">Кол-во</th><th class="n hide-m">Цена</th><th class="n">Сумма</th></tr></thead><tbody>'+rows+'</tbody></table>'
+   + '<div class="total"><span>Итого'+(r.area?' · ~'+rub(r.total/r.area)+' за м²':'')+'</span><b>'+rub(r.total)+'</b></div>'
+   + '<div class="small">'+esc(P.nds_tekst)+'. '+r.notes.map(esc).join(' ')+'</div>'
+   + '<p class="small" style="margin-top:12px"><b>Не входит в расчёт:</b></p><ul class="small">'+r.excluded.map(x => '<li>'+esc(x)+'</li>').join('')+'</ul>'
+   + '<div class="foot">Расчёт предварительный и сделан по введённым параметрам. Точную цену фиксируем в договоре после уточнения ТЗ и участка. Вопросы: '+esc(COMPANY.phone)+', Telegram '+esc(COMPANY.telegram.replace('https://',''))+'.</div>';
+}
+function kpText(r){
+  return r.kind+': '+r.title+'\n'+r.params.map(p => p[0]+': '+p[1]).join('; ')+'\n'
+    + r.items.map((i,k) => (k+1)+'. '+i[0]+' — '+fmt(i[1], i[2]==='т'?1:0)+' '+i[2]+' × '+rub(i[3])+' = '+rub(i[4])).join('\n')
+    + '\nИТОГО: '+rub(r.total)+(r.area?' (~'+rub(r.total/r.area)+'/м²)':'')+'. '+P.nds_tekst;
+}
+
+let sent = false;
+$('go').addEventListener('click', () => {
+  const name = $('c_name').value.trim(), d = digits(), city = $('c_city').value.trim();
+  let e = '';
+  if (name.length < 2) { $('c_name').classList.add('bad'); e = 'Укажите имя.'; }
+  if (d.length !== 11) { phone.classList.add('bad'); e = e ? 'Укажите имя и телефон.' : 'Проверьте номер телефона: нужно 10 цифр после +7.'; }
+  if (!e && !$('c_agree').checked) e = 'Нужно согласие на обработку данных.';
+  $('err').textContent = e; if (e) return;
+
+  const r = result(), no = kpNumber(), c = {name, city};
+  $('doc').innerHTML = renderDoc(r, c, no);
+  document.title = 'КП ' + no + ' — ' + COMPANY.name;
+  $('form').classList.add('hidden'); $('result').classList.remove('hidden');
+  window.scrollTo({top:0, behavior:'smooth'});
+
+  if ($('c_site').value || sent) return;            // бот или повторная отправка
+  sent = true;
+  const payload = {kp: no, name, phone: '+'+d, city, kind: r.kind, title: r.title,
+    params: r.params.map(p => p[0]+': '+p[1]).join('; '), total: r.total,
+    perM2: r.area ? Math.round(r.total/r.area) : '', text: kpText(r), src};
+  if (!SCRIPT_URL) { console.warn('SCRIPT_URL не задан — заявка не отправлена', payload); return; }
+  fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload)}).catch(() => {});
+});
+$('pdf').addEventListener('click', () => window.print());
+$('again').addEventListener('click', () => { sent = false; $('result').classList.add('hidden'); $('form').classList.remove('hidden'); document.title = 'Расчёт стоимости — ' + COMPANY.name; });
+
+update();
+})();
+</script>
+</body>
+</html>
