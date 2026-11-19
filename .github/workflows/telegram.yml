@@ -1,0 +1,30 @@
+name: Telegram publish
+on:
+  push:
+    branches: [main]
+    paths: ["telegram/outbox/*.json"]
+  workflow_dispatch:
+    inputs:
+      test_message:
+        description: "Тестовое сообщение в канал"
+        required: false
+permissions:
+  contents: write
+concurrency: telegram
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Send posts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || '@spbpokoleniya' }}
+          TEST_MESSAGE: ${{ github.event.inputs.test_message }}
+        run: python3 telegram/send.py
+      - name: Move sent posts
+        run: |
+          git config user.name "smm-bot"
+          git config user.email "noreply@anthropic.com"
+          git add -A telegram
+          git diff --cached --quiet || (git commit -m "Telegram: mark posts as sent" && git push)
