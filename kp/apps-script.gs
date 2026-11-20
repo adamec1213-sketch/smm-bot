@@ -65,6 +65,34 @@ const IN_VAT_RATE = 'Ставка НДС (считается сама из вы�
 const IN_DAYS = 'Срок монтажных работ, дней';
 const ALLOWED = { vat: FIELDS.vat.list, wallThk: FIELDS.wallThk.list, roofThk: FIELDS.roofThk.list };
 
+// Строки листа «Расчёт» (столбец A → значение в B), которые идут в КП: чертежи, ведомость металла, объёмы.
+const FACTS = {
+  frames: 'Число рам', step: 'Фактический шаг рам, м', fachwerkCols: 'Колонн фахверка (оба торца)',
+  slopeRad: 'Уклон, рад', slopeLen: 'Длина ската, м', purlinRows: 'Рядов прогонов', snow: 'Снеговая нагрузка, кПа',
+  colsKg: 'Колонны рам, кг', raftersKg: 'Стропильные балки / фермы, кг', eaveKg: 'Карнизные балки, кг',
+  purlinsKg: 'Прогоны, кг', wallBrKg: 'Связи по стенам, кг', roofBrKg: 'Связи по кровле, кг',
+  kneeKg: 'Укосины торцевых стен, кг', fachwerkKg: 'Фахверк, кг', girtsKg: 'Ригели стен, кг',
+  channelKg: 'Нижний прогон-швеллер, кг', nodesKg: 'Узлы, пластины, болты, кг',
+  steelT: 'МЕТАЛЛОКОНСТРУКЦИИ ВСЕГО, т', steelKgM2: 'Металлоёмкость, кг/м²',
+  wallM2: 'Стеновые панели, м²', roofM2: 'Кровельные панели, м²',
+  colsAll: 'Колонн всего (с фахверком)', piles: 'Винтовых свай, шт', footings: 'Монолитных фундаментов (ростверков), шт',
+  footV: 'Бетон фундаментов, м³', footRebar: 'Арматура фундаментов, кг', anchors: 'Анкерные болты, шт',
+  bored: 'Буронабивных свай, шт', pileLen: 'Длина сваи, м',
+  slabT: 'Толщина монолитной плиты, мм', slabV: 'Бетон плиты B25, м³', slabRebar: 'Арматура плиты, кг',
+  sand: 'Песок на подушку, м³', gravel: 'Щебень на подушку, м³', pag: 'Плиты ПАГ 6 × 2 м, шт',
+  tripsSteel: 'Рейсов доставки МК', tripsPanel: 'Рейсов доставки панелей', flashing: 'Итого фасонки, м.п. (ориентировочный расчёт)'
+};
+function facts_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName('Расчёт');
+  if (!sh) return {};
+  const v = sh.getRange(1, 1, sh.getLastRow(), 2).getValues();
+  const byLabel = {};
+  v.forEach(r => { const k = String(r[0]).trim(); if (k && !(k in byLabel)) byLabel[k] = r[1]; });
+  const out = {};
+  Object.keys(FACTS).forEach(k => { const x = byLabel[FACTS[k]]; if (x !== undefined && x !== '') out[k] = typeof x === 'number' ? x : String(x); });
+  return out;
+}
+
 /** Проверить значение поля: вернуть годное значение или undefined (тогда поле не трогаем). */
 function field_(k, raw) {
   const f = FIELDS[k];
@@ -207,6 +235,7 @@ function calcAngar_(p) {
     if (missing.length) notes.push('Стоимость позиций «' + missing.join('», «') + '» в расчёт не вошла — её уточнит инженер.');
     return {
       kind: 'Ангар под ключ', area: area, total: total, items: items, missing: missing,
+      facts: facts_(), input: v, vatTotal: vatTotal, days: days,
       title: v.L + ' × ' + v.W + ' м, высота ' + v.H + ' м', params: params, notes: notes,
       excluded: ['топпинг пола, огнезащита, перегородки — по запросу', 'инженерные системы: отопление, вентиляция, электрика, водопровод',
         'подключение к сетям, благоустройство']
@@ -274,6 +303,8 @@ function finish_(r) {
   r.items = r.items.filter(i => i[3]);
   r.total = r.items.reduce((s, i) => s + i[4], 0);
   r.notes.unshift(vatInfo_(r.vatOf[0], r.vatOf[1], r.total));
+  const rate = num_(r.vatOf[0].getRange(r.vatOf[1][IN_VAT_RATE], 2).getValue());
+  r.vatTotal = rate ? Math.round(r.total * rate / (1 + rate)) : 0;
   delete r.vatOf;
   return r;
 }

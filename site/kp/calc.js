@@ -112,7 +112,7 @@ $('go').addEventListener('click', async () => {
     clearTimeout(t);
     const j = await res.json();
     if (!j.ok) throw new Error(j.error === 'busy' ? 'busy' : 'calc');
-    $('doc').innerHTML = renderDoc(j.result, {name, city}, j.kp, j.days || 10);
+    $('doc').innerHTML = renderDeck(j.result, {name, city}, j.kp, j.days || 10, COMPANY);
     document.title = 'КП ' + j.kp + ' — ' + COMPANY.name;
     $('form').classList.add('hidden'); $('result').classList.remove('hidden');
     window.scrollTo({top:0, behavior:'smooth'});
