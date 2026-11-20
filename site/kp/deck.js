@@ -92,7 +92,7 @@ function isoBuilding(g) {
   if (g.windows && H > 3.2) { const y = W / 2, z0 = Math.min(H * .55, H - 1.6); o.push(poly([[L, y - 1.5, z0], [L, y + 1.5, z0], [L, y + 1.5, z0 + .9], [L, y - 1.5, z0 + .9]], '#5fb0d3', '#2d6f8c', .05)); }
   const s = Math.max(L, W) / 40;
   o.push(tree(-pad * .3, W + pad * .6, s), tree(L + pad * .5, W * .4, s), tree(L * .15, W + pad * 1.2, s * .9), tree(L + pad * .3, W + pad * .9, s));
-  return svgWrap(box([[-pad, -pad, 0], [L + pad, W + pad * 1.6, 0], [0, 0, Hr + 4], [L, W, 0], [L, 0, Hr + 4]]), 1, o.join(''));
+  return svgWrap(box([[-pad, -pad, 0], [L + pad, -pad, 0], [L + pad, W + pad * 1.6, 0], [-pad, W + pad * 1.6, 0], [0, 0, Hr + 5], [L, 0, Hr + 5], [0, W / 2, Hr + 3]]), 1, o.join(''));
 }
 
 // Металлический каркас: рамы с фермами или балками, прогоны, связи.
@@ -133,7 +133,7 @@ function isoFrame(g, f) {
   // фахверк торцов
   for (let k = 1; k <= g.fw; k++) { const y = k * W / (g.fw + 1); const z = H + (y <= W / 2 ? y : W - y) / (W / 2) * (Hr - H);
     o.push(line([0, y, 0], [0, y, z], '#5a5f66', .16), line([L, y, 0], [L, y, z], '#5a5f66', .16)); }
-  return svgWrap(box([[0, 0, 0], [L, W, 0], [0, 0, Hr], [L, 0, Hr], [0, W, Hr]]), 1.5, o.join(''));
+  return svgWrap(box([[0, 0, 0], [L, 0, 0], [L, W, 0], [0, W, 0], [0, 0, Hr], [L, 0, Hr], [0, W, Hr], [0, W / 2, Hr], [L, W / 2, Hr]]), 1.5, o.join(''));
 }
 
 // План с осями и колоннами.
@@ -400,7 +400,8 @@ function renderDeck(r, client, no, days, C) {
     '<div class="d-band"><img src="' + A + 'kaska-s.jpg" alt=""><div><b>ОДИН ПОДРЯДЧИК НА ВЕСЬ ЦИКЛ</b><span>меньше рисков, быстрее запуск, предсказуемый результат</span></div></div>');
 
   const foot = 'РСК ПОКОЛЕНИЯ · ПРЕДВАРИТЕЛЬНОЕ КП № ' + esc(no) + ' · ' + esc(title.toUpperCase());
-  return S.map((s, i) => '<section class="slide' + (i === 0 ? ' first' : '') + '">' + s + (i ? '<footer class="d-foot"><span>' + foot + '</span><span>' + (i + 1) + ' / ' + S.length + '</span></footer>' : '') + '</section>').join('');
+  const fixSvg = h => h.replace(/<svg viewBox="([-\d. ]+)"/g, (m, vb) => { const q = vb.trim().split(/\s+/); return m + ' style="aspect-ratio:' + q[2] + '/' + q[3] + '"'; });
+  return S.map(fixSvg).map((s, i) => '<section class="slide' + (i === 0 ? ' first' : '') + '">' + s + (i ? '<footer class="d-foot"><span>' + foot + '</span><span>' + (i + 1) + ' / ' + S.length + '</span></footer>' : '') + '</section>').join('');
 }
 window.renderDeck = renderDeck;
 })();
