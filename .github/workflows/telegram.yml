@@ -8,6 +8,10 @@ on:
       test_message:
         description: "Тестовое сообщение в канал"
         required: false
+      check_only:
+        description: "Только проверить токен и права бота, ничего не публиковать"
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency: telegram
@@ -21,6 +25,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || '@spbpokoleniya' }}
           TEST_MESSAGE: ${{ github.event.inputs.test_message }}
+          CHECK_ONLY: ${{ github.event.inputs.check_only }}
         run: python3 telegram/send.py
       - name: Move sent posts
         run: |

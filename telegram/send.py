@@ -46,7 +46,24 @@ def send(post):
     return call("sendMediaGroup", {"chat_id": CHAT, "media": media})
 
 
+def check():
+    """Проверка без публикации: токен, канал и права бота."""
+    me = call("getMe", {})
+    print("Бот:", "@" + me["username"])
+    chat = call("getChat", {"chat_id": CHAT})
+    print("Канал:", chat.get("title"), "@" + str(chat.get("username")))
+    m = call("getChatMember", {"chat_id": CHAT, "user_id": me["id"]})
+    print("Статус бота в канале:", m.get("status"), "| может публиковать:", m.get("can_post_messages"))
+    if m.get("status") != "administrator" or not m.get("can_post_messages"):
+        sys.exit("Бот не администратор канала или не может публиковать")
+    print("✅ Всё готово к публикации")
+
+
 if __name__ == "__main__":
+    if not TOKEN:
+        sys.exit("Секрет TELEGRAM_BOT_TOKEN не задан в GitHub")
+    if os.environ.get("CHECK_ONLY") == "true":
+        check(); sys.exit(0)
     files = sorted(glob.glob("telegram/outbox/*.json"))
     if os.environ.get("TEST_MESSAGE"):
         print("✅", link(call("sendMessage", {"chat_id": CHAT, "text": os.environ["TEST_MESSAGE"]})))
