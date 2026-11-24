@@ -155,7 +155,7 @@ def promo(up, I, kp_q=''):
       <p class="sub">Калькулятор считает по нашей смете: те же позиции и цены, по которым инженеры готовят коммерческие предложения.</p>
       <ol>
         <li><b>1</b><span>Укажите размеры, фундамент, пол, ворота и окна.</span></li>
-        <li><b>2</b><span>Выберите НДС: 5 % или 22 %.</span></li>
+        <li><b>2</b><span>Выберите: без НДС или с НДС 22 %.</span></li>
         <li><b>3</b><span>Получите КП с объёмами и ценой каждой позиции. Его можно скачать в PDF.</span></li>
       </ol>
       <a class="cta" href="{up}kp/{kp_q}">{I['calc']}Рассчитать стоимость</a>
@@ -489,7 +489,7 @@ PAGES = [
     dict(path='kp/', body=kp, no_fab=True, title='Калькулятор стоимости ангара — КП за 2 минуты | РСК «Поколения»',
          desc='Рассчитайте стоимость ангара, сэндвич-панелей или металлоконструкций и сразу получите коммерческое предложение с разбивкой по позициям.',
          head=f'<style>\n{read("calc.css")}\n{read("deck.css")}</style>\n',
-         foot=f'<script>\n{read("config.js")}\n</script>\n<script>\n{read("deck.js")}</script>\n<script>\n{read("calc.js")}</script>'),
+         foot=f'<script>\n{read("config.js")}\n</script>\n<script>\n{read("panels.js")}</script>\n<script>\n{read("deck.js")}</script>\n<script>\n{read("calc.js")}</script>'),
     dict(path='politika/', body=politika, title='Политика обработки персональных данных — РСК «Поколения»',
          desc='Как РСК «Поколения» обрабатывает персональные данные посетителей сайта.'),
     dict(path='', file='404.html', abs=True, noindex=True, body=notfound, title='Страница не найдена — РСК «Поколения»',

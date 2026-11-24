@@ -44,8 +44,14 @@ const FIELDS = {
   fachwerk:  { label: 'Фахверковые колонны на торцах', name: 'Фахверк на торцах', list: YN },
   layout:    { label: 'Раскладка стеновых панелей', name: 'Раскладка стеновых панелей', list: ['вертикальная', 'горизонтальная'] },
   base:      { label: 'Основание стен', name: 'Основание стен', list: ['швеллер'] },   // «цоколь» — нет цены в «Справочнике»
-  wallThk:   { label: 'Толщина стеновых панелей, мм', name: 'Стеновые панели', unit: 'мм', list: [100, 120] },   // толщины, для которых есть цена
-  roofThk:   { label: 'Толщина кровельных панелей, мм', name: 'Кровельные панели', unit: 'мм', list: [120, 150] },
+  wallCore:  { label: 'Утеплитель стеновых панелей', name: 'Утеплитель стен', list: ['минвата', 'пенопласт', 'КОМБИ'] },
+  roofCore:  { label: 'Утеплитель кровельных панелей', name: 'Утеплитель кровли', list: ['минвата', 'пенопласт', 'КОМБИ'] },
+  wallW:     { label: 'Ширина стеновой панели, мм', name: 'Ширина стеновой панели', unit: 'мм', list: [1000, 1190] },
+  mTop:      { label: 'Металл панелей снаружи, мм', name: 'Металл снаружи', unit: 'мм', list: [0.4, 0.45, 0.5] },
+  mBot:      { label: 'Металл панелей внутри, мм', name: 'Металл внутри', unit: 'мм', list: [0.4, 0.45, 0.5] },
+  ral:       { label: 'Цвет панелей снаружи (RAL)', name: 'Цвет панелей (RAL)', list: [1014, 1015, 5005, 6005, 7004, 7024, 7035, 8017, 9002, 9003, 9006] },
+  wallThk:   { label: 'Толщина стеновых панелей, мм', name: 'Стеновые панели', unit: 'мм', list: [50, 60, 80, 100, 120, 150, 180, 200, 220, 250, 300] },   // цена — с листа «Панели МП»
+  roofThk:   { label: 'Толщина кровельных панелей, мм', name: 'Кровельные панели', unit: 'мм', list: [50, 60, 80, 100, 120, 150, 180, 200, 220, 250, 300] },
   ovhEnd:    { label: 'Свес кровли по торцам (с каждой стороны), м', name: 'Свес по торцам', unit: 'м', min: 0, max: 2 },
   ovhEave:   { label: 'Свес кровли по карнизу, м (по скату)', name: 'Свес по карнизу', unit: 'м', min: 0, max: 2 },
   fund:      { label: 'Фундамент', name: 'Фундамент', list: ['винтовые сваи', 'монолит'] },
@@ -57,7 +63,7 @@ const FIELDS = {
   flash:     { label: 'Фасонные элементы включить в смету', name: 'Фасонные элементы', list: YN },
   gutter:    { label: 'Водосток и снегозадержание', name: 'Водосток и снегозадержатели', list: YN },
   delivery:  { label: 'Доставка металла и панелей', name: 'Доставка', list: YN },
-  vat:       { label: 'НДС для клиента (выберите 5 % или 22 %)', name: 'НДС', list: ['5 %', '22 %'] }
+  vat:       { label: 'НДС для клиента (выберите «без НДС» или «22 %»)', name: 'НДС', list: ['без НДС', '22 %'] }
 };
 const IN = {};
 Object.keys(FIELDS).forEach(k => IN[k] = FIELDS[k].label);
@@ -192,10 +198,11 @@ function withInputs_(values, read) {
   }
 }
 
-function vat_(p) { return ALLOWED.vat.indexOf(p.vat) >= 0 ? p.vat : '5 %'; }
+function vat_(p) { return ALLOWED.vat.indexOf(p.vat) >= 0 ? p.vat : 'без НДС'; }
 /** «Цены с НДС 22 %, в т. ч. НДС 1 234 ₽.» — ставка из «Ввода», как её посчитала таблица. */
 function vatInfo_(sh, rows, total) {
   const vat = String(sh.getRange(rows[IN.vat], 2).getValue() || '').trim();
+  if (vat !== '22 %') return 'Цены без НДС.';
   const rate = num_(sh.getRange(rows[IN_VAT_RATE], 2).getValue());
   return 'Цены с НДС ' + vat + (rate ? ', в т. ч. НДС ' + rub_(total * rate / (1 + rate)) : '') + '.';
 }
@@ -209,7 +216,7 @@ function calcAngar_(p) {
   const v = {};
   Object.keys(FIELDS).forEach(k => { const x = field_(k, p[k]); if (x !== undefined) v[k] = x; });
   ['L', 'W', 'H'].forEach(k => { if (v[k] === undefined) throw new Error('не указан размер: ' + FIELDS[k].name); });
-  if (v.vat === undefined) v.vat = '5 %';
+  if (v.vat === undefined) v.vat = 'без НДС';
   return withInputs_(v, (sh, rows) => {
     const sm = smeta_();
     const k = 1 + markup_(sm);
@@ -217,7 +224,7 @@ function calcAngar_(p) {
     const end = sm.findIndex(r => r.name === 'Сумма по разделам');
     const items = sm.slice(start, end).filter(r => num_(r.sum) > 0)
       .map(r => [r.name, num_(r.qty), r.unit, num_(r.price) * k, num_(r.sum) * k]);
-    const total = smetaTotal_(sm, 'ИТОГО С НДС');
+    const total = smetaTotal_(sm, 'ИТОГО');
     const area = v.L * v.W;
     const days = num_(sh.getRange(rows[IN_DAYS], 2).getValue());
     const vatTotal = smetaTotal_(sm, 'в том числе НДС');
@@ -230,12 +237,12 @@ function calcAngar_(p) {
       params.push([f.name, (typeof val === 'number' ? String(val).replace('.', ',') : String(val)) + (f.unit ? (f.unit === '°' ? '' : ' ') + f.unit : '')]);
     });
     if (p.use) params.push(['Назначение', String(p.use).slice(0, 40)]);
-    const notes = ['Цены с НДС ' + v.vat + ', в т. ч. НДС ' + rub_(vatTotal) + '.'];
+    const notes = [v.vat === '22 %' ? 'Цены с НДС 22 %, в т. ч. НДС ' + rub_(vatTotal) + '.' : 'Цены без НДС.'];
     if (days) notes.push('Срок монтажных работ — около ' + days + ' рабочих дней.');
     if (missing.length) notes.push('Стоимость позиций «' + missing.join('», «') + '» в расчёт не вошла — её уточнит инженер.');
     return {
       kind: 'Ангар под ключ', area: area, total: total, items: items, missing: missing,
-      facts: facts_(), input: v, vatTotal: vatTotal, days: days,
+      facts: facts_(), input: v, vatTotal: v.vat === '22 %' ? vatTotal : 0, days: days,
       title: v.L + ' × ' + v.W + ' м, высота ' + v.H + ' м', params: params, notes: notes,
       excluded: ['топпинг пола, огнезащита, перегородки — по запросу', 'инженерные системы: отопление, вентиляция, электрика, водопровод',
         'подключение к сетям, благоустройство']
@@ -243,29 +250,65 @@ function calcAngar_(p) {
   });
 }
 
-// ---------- Сэндвич-панели: цены из «Сметы» ----------
+// ---------- Сэндвич-панели: цена с листа «Панели МП» (калькулятор поставщика) ----------
+/** Таблица поставщика: ключ → [база ₽/м², название цвета], надбавка владельца и наценка за объём. */
+function panelTable_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName('Панели МП');
+  if (!sh) throw new Error('нет листа «Панели МП»');
+  const last = sh.getLastRow();
+  const v = sh.getRange(5, 1, last - 4, 11).getValues();     // A..K
+  const base = {};
+  v.forEach(r => { if (r[0]) base[String(r[0]).trim()] = [num_(r[10]), String(r[8])]; });
+  const side = sh.getRange(1, 14, Math.min(last, 40), 2).getValues();   // N..O
+  let add = 0, tiers = [], inTiers = false;
+  side.forEach(r => {
+    const k = String(r[0]).trim();
+    if (k.indexOf('Надбавка владельца') === 0) add = num_(r[1]);
+    else if (k.indexOf('Объём от') === 0) inTiers = true;
+    else if (inTiers && r[0] !== '' && isFinite(Number(r[0]))) tiers.push([num_(r[0]), num_(r[1])]);
+    else if (inTiers && r[0] === '') inTiers = tiers.length === 0;
+  });
+  tiers.sort((x, y) => x[0] - y[0]);
+  return { base: base, add: add, tiers: tiers };
+}
+/** Как в «Справочнике»: (база + наценка за объём + надбавка) × (без НДС → ÷ 1,22). До 50 м² — 60 000 ₽ на заказ. */
+function panelPrice_(t, key, area, vat) {
+  const b = t.base[key];
+  if (!b) return null;
+  let vol = 0;
+  if (area <= 50) vol = 60000 / Math.max(1, area);
+  else t.tiers.forEach(x => { if (area >= x[0]) vol = x[1]; });
+  return { price: Math.round((b[0] + vol + t.add) * (vat === '22 %' ? 1 : 1 / 1.22) * 100) / 100, color: b[1] };
+}
 function calcPanel_(p) {
   const roof = p.type === 'roof';
-  const thk = roof ? (ALLOWED.roofThk.indexOf(num_(p.thk)) >= 0 ? num_(p.thk) : 120)
-                   : (ALLOWED.wallThk.indexOf(num_(p.thk)) >= 0 ? num_(p.thk) : 100);
-  const A = clamp_(num_(p.area), 10, 100000), mont = p.mont === '1', deliv = p.deliv === '1';
-  const set = roof ? { roofThk: thk, vat: vat_(p) } : { wallThk: thk, vat: vat_(p) };
-  return withInputs_(set, (sh, rows) => {
+  const pick = (k, x, d) => { const v = field_(k, x); return v === undefined ? d : v; };
+  const core = pick(roof ? 'roofCore' : 'wallCore', p.core, 'минвата');
+  const w = roof ? 1000 : pick('wallW', p.width, 1000);
+  const thk = pick(roof ? 'roofThk' : 'wallThk', p.thk, roof ? 150 : 100);
+  const mTop = pick('mTop', p.mTop, 0.45), mBot = pick('mBot', p.mBot, 0.45), ral = pick('ral', p.ral, 7024);
+  const A = clamp_(num_(p.area), 10, 100000), mont = p.mont === '1', deliv = p.deliv === '1', vat = vat_(p);
+  const key = [roof ? 'кровля' : 'стена', core, w, thk, mTop, mBot, ral].join('|');
+  const pp = panelPrice_(panelTable_(), key, A, vat);
+  if (!pp) throw new Error('нет такой панели у поставщика: ' + key);
+  return withInputs_({ vat: vat }, (sh, rows) => {
     const sm = smeta_(); const k = 1 + markup_(sm);
     const perTruck = nextTo_('График', 'Помещается в одну фуру, м²', 250);
     const pr = n => num_((findRow_(sm, n) || {}).price) * k;
-    const items = [[(roof ? 'Кровельные' : 'Стеновые') + ' сэндвич-панели, минвата ' + thk + ' мм', A, 'м²', pr(roof ? 'Кровельные сэндвич-панели' : 'Стеновые сэндвич-панели')]];
+    const items = [[(roof ? 'Кровельные' : 'Стеновые') + ' сэндвич-панели, ' + core + ' ' + thk + ' мм, RAL ' + ral, A, 'м²', pp.price * k]];
     if (mont) {
       items.push(['Монтаж сэндвич-панелей', A, 'м²', pr('Монтаж сэндвич-панелей')]);
       items.push(['Расходники для монтажа (герметик, саморезы, лента)', A, 'м²', pr('Расходники')]);
     }
     if (deliv) items.push(['Доставка сэндвич-панелей', Math.ceil(A / perTruck), 'рейс', pr('Доставка сэндвич-панелей')]);
+    const mm = x => String(x).replace('.', ',') + ' мм';
     return finish_({
       kind: 'Сэндвич-панели', area: 0, items: items,
-      title: (roof ? 'Кровельные' : 'Стеновые') + ' сэндвич-панели ' + thk + ' мм — ' + A + ' м²',
-      params: [['Тип', (roof ? 'кровельные' : 'стеновые') + ', минеральная вата'], ['Толщина', thk + ' мм'], ['Площадь', A + ' м²'],
-        ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat_(p)]],
-      notes: ['Другие толщины, PIR и цвет по RAL — по запросу.'], vatOf: [sh, rows],
+      title: (roof ? 'Кровельные' : 'Стеновые') + ' сэндвич-панели ' + core + ' ' + thk + ' мм — ' + A + ' м²',
+      params: [['Тип', roof ? 'кровельные' : 'стеновые'], ['Утеплитель', core], ['Толщина', thk + ' мм'], ['Ширина панели', w + ' мм'],
+        ['Металл снаружи / внутри', mm(mTop) + ' / ' + mm(mBot)], ['Цвет снаружи', 'RAL ' + ral + (pp.color ? ' (' + pp.color + ')' : '')],
+        ['Площадь', A + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]],
+      notes: ['Цена панелей — по прайсу поставщика с учётом объёма заказа. Цвет изнутри — RAL 9003.'], vatOf: [sh, rows],
       excluded: ['фасонные элементы — по спецификации', 'разгрузка на объекте']
     });
   });
@@ -303,7 +346,8 @@ function finish_(r) {
   r.items = r.items.filter(i => i[3]);
   r.total = r.items.reduce((s, i) => s + i[4], 0);
   r.notes.unshift(vatInfo_(r.vatOf[0], r.vatOf[1], r.total));
-  const rate = num_(r.vatOf[0].getRange(r.vatOf[1][IN_VAT_RATE], 2).getValue());
+  const vat = String(r.vatOf[0].getRange(r.vatOf[1][IN.vat], 2).getValue() || '').trim();
+  const rate = vat === '22 %' ? num_(r.vatOf[0].getRange(r.vatOf[1][IN_VAT_RATE], 2).getValue()) : 0;
   r.vatTotal = rate ? Math.round(r.total * rate / (1 + rate)) : 0;
   delete r.vatOf;
   return r;

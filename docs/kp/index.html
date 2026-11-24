@@ -109,6 +109,12 @@ input.bad{border-color:var(--err)}
 .more .grid{row-gap:16px}
 .calc:has(#result:not(.hidden)){max-width:1240px!important}
 
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.swatches label{cursor:pointer}
+.swatches input{display:none}
+.swatches i{display:block;width:38px;height:38px;border-radius:10px;border:2px solid var(--line)}
+.swatches input:checked+i{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+
 /* ===== КП-презентация 16:9 (размеры в cqw: calc(1*var(--u)) = 1% ширины слайда) ===== */
 .deck{--u:1cqw;display:grid;gap:18px;--g:#D9B05E;--gd:#b8924a;--ink:#17150f;--mut:#6b665c;--bd:#ece5d6;--cream:#faf6ec}
 .slide{container-type:inline-size;position:relative;width:100%;aspect-ratio:16/9;background:#fff;color:var(--ink);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:Montserrat,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -433,10 +439,12 @@ input.bad{border-color:var(--err)}
 
   <section class="card">
     <h2>Стены и кровля</h2>
-    <div class="hint" style="margin:-6px 0 14px">Сэндвич-панели с минеральной ватой</div>
+    <div class="hint" style="margin:-6px 0 14px">Сэндвич-панели: утеплитель, толщина и цвет — по прайсу поставщика</div>
     <div class="grid">
-      <div><label class="f">Стеновые панели, мм</label><div class="seg"><label><input type="radio" name="a_wallThk" value="100" checked><span>100</span></label><label><input type="radio" name="a_wallThk" value="120"><span>120</span></label></div></div>
-      <div><label class="f">Кровельные панели, мм</label><div class="seg"><label><input type="radio" name="a_roofThk" value="120" checked><span>120</span></label><label><input type="radio" name="a_roofThk" value="150"><span>150</span></label></div></div>
+      <div><label class="f">Утеплитель панелей</label><select id="a_core"><option value="минвата">Минвата (не горит)</option><option value="пенопласт">Пенопласт</option><option value="КОМБИ">КОМБИ</option></select></div>
+      <div><label class="f">Цвет панелей (RAL)</label><select id="a_ral"></select></div>
+      <div><label class="f">Стеновые панели, мм</label><select id="a_wallThk"></select></div>
+      <div><label class="f">Кровельные панели, мм</label><select id="a_roofThk"></select></div>
     </div>
   </section>
 
@@ -495,17 +503,22 @@ input.bad{border-color:var(--err)}
 
   <!-- ===== ПАНЕЛИ ===== -->
   <section class="card hidden" data-pane="panel">
-    <h2>Сэндвич-панели (минвата)</h2>
+    <h2>Сэндвич-панели</h2>
     <div><label class="f">Назначение</label>
       <div class="seg">
         <label><input type="radio" name="p_type" value="wall" checked><span>Стеновые</span></label>
         <label><input type="radio" name="p_type" value="roof"><span>Кровельные</span></label>
       </div>
     </div>
+    <div style="margin-top:16px"><label class="f">Утеплитель</label><div class="seg" id="p_core_box"></div><div class="hint" id="p_core_hint"></div></div>
     <div class="grid" style="margin-top:16px">
       <div><label class="f">Толщина, мм</label><select id="p_th"></select></div>
+      <div id="p_w_box"><label class="f">Ширина панели, мм</label><select id="p_w"></select></div>
+      <div><label class="f">Металл снаружи, мм</label><select id="p_mt"></select></div>
+      <div><label class="f">Металл внутри, мм</label><select id="p_mb"></select></div>
       <div><label class="f">Площадь, м²</label><input type="number" id="p_area" value="500" min="10" max="100000" inputmode="numeric"></div>
     </div>
+    <div style="margin-top:16px"><label class="f">Цвет снаружи (RAL)</label><div class="swatches" id="p_ral_box"></div><div class="hint" id="p_ral_hint"></div></div>
     <div style="margin-top:16px"><label class="f">Монтаж</label>
       <div class="seg">
         <label><input type="radio" name="p_mont" value="0" checked><span>Только поставка</span></label>
@@ -518,7 +531,7 @@ input.bad{border-color:var(--err)}
         <label><input type="radio" name="p_deliv" value="0"><span>Самовывоз</span></label>
       </div>
     </div>
-    <div class="hint">Другие толщины, PIR и цвет по RAL уточним при звонке.</div>
+    <div class="hint">Цена — по прайсу поставщика с учётом объёма: чем больше площадь, тем ниже цена за м². Цвет изнутри — RAL 9003 (белый).</div>
   </section>
 
   <!-- ===== МЕТАЛЛОКОНСТРУКЦИИ ===== -->
@@ -566,8 +579,8 @@ input.bad{border-color:var(--err)}
   <section class="card">
     <h2>НДС в цене</h2>
     <div class="seg" id="vat_box">
-      <label><input type="radio" name="vat" value="5 %"><span>НДС 5 %</span></label>
-      <label><input type="radio" name="vat" value="22 %"><span>НДС 22 %</span></label>
+      <label><input type="radio" name="vat" value="без НДС"><span>Без НДС</span></label>
+      <label><input type="radio" name="vat" value="22 %"><span>С НДС 22 %</span></label>
     </div>
     <div class="hint">Выберите, с каким НДС вам нужна цена: от этого зависит стоимость работ.</div>
   </section>
@@ -630,6 +643,28 @@ const COMPANY = {
   telegram: 'https://t.me/spbpokoleniya'
 };
 
+</script>
+<script>
+// Варианты сэндвич-панелей поставщика «МП» (лист «Панели МП» калькулятора владельца).
+// Только списки для выбора — без цен. Цену считает таблица.
+const PANEL_OPTS = {
+  cores: { wall: ['минвата', 'пенопласт', 'КОМБИ'], roof: ['минвата', 'пенопласт', 'КОМБИ'] },
+  widths: { wall: [1000, 1190], roof: [1000] },
+  thk: {
+    'wall|минвата': [50, 60, 80, 100, 120, 150, 180, 200, 250, 300],
+    'wall|пенопласт': [50, 60, 80, 100, 120, 150, 180, 200, 250, 300],
+    'wall|КОМБИ': [50, 60, 80, 100, 120, 150, 180, 200, 250, 300],
+    'roof|минвата': [50, 60, 80, 100, 120, 150, 180, 200, 220, 250],
+    'roof|пенопласт': [50, 60, 80, 100, 120, 150, 180, 200, 250, 300],
+    'roof|КОМБИ': [50, 60, 80, 100, 120, 150, 180, 200, 250, 300]
+  },
+  metals: [0.4, 0.45, 0.5],
+  colors: [[7024, 'Серый графит', '#474a51'], [9003, 'Сигнальный белый', '#f4f4f4'], [9002, 'Серо-белый', '#e7ebda'],
+    [9006, 'Серебристый металлик', '#a5a5a5'], [7004, 'Сигнальный серый', '#969992'], [7035, 'Туманно-серый', '#d7d7d7'],
+    [1014, 'Слоновая кость', '#e1cc9f'], [1015, 'Светло-слоновая кость', '#e6d690'], [5005, 'Сигнальный синий', '#1e2480'],
+    [6005, 'Зелёный мох', '#2f4538'], [8017, 'Шоколадно-коричневый', '#45322e']],
+  coreNote: { 'минвата': 'не горит: для складов, цехов, автосервисов', 'пенопласт': 'легче и дешевле минваты, но горючий', 'КОМБИ': 'комбинированный утеплитель: состав уточним при звонке' }
+};
 </script>
 <script>
 // КП-презентация в стиле «КП склад №1»: слайды 16:9, чертежи строятся по ответу калькулятора владельца.
@@ -1054,6 +1089,33 @@ document.querySelectorAll('.em').forEach(e => e.textContent = COMPANY.email);
 $('tg').href = COMPANY.telegram; $('call').href = COMPANY.phoneHref;
 $('call').textContent = 'Позвонить ' + COMPANY.phone;
 
+// ---------- Панели: списки из PANEL_OPTS (без цен) ----------
+const opts = (sel, list, def, label) => { const cur = sel.value;
+  sel.innerHTML = list.map(v => '<option value="'+v+'">'+(label ? label(v) : String(v).replace('.', ','))+'</option>').join('');
+  sel.value = list.map(String).includes(cur) ? cur : String(def); };
+const ralName = c => (PANEL_OPTS.colors.find(x => x[0] == c) || [c, ''])[1];
+function panelOpts(){
+  const type = radio('p_type') || 'wall', box = $('p_core_box');
+  const core = radio('p_core') || 'минвата';
+  box.innerHTML = PANEL_OPTS.cores[type].map(c => '<label><input type="radio" name="p_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
+  box.querySelectorAll('input').forEach(e => e.addEventListener('change', hints));
+  $('p_core_hint').textContent = PANEL_OPTS.coreNote[core] || '';
+  opts($('p_th'), PANEL_OPTS.thk[type+'|'+core], type === 'roof' ? 150 : 100);
+  opts($('p_w'), PANEL_OPTS.widths[type], 1000); $('p_w_box').classList.toggle('hidden', type === 'roof');
+  opts($('p_mt'), PANEL_OPTS.metals, 0.45); opts($('p_mb'), PANEL_OPTS.metals, 0.45);
+  const rb = $('p_ral_box');
+  if (!rb.children.length) {
+    rb.innerHTML = PANEL_OPTS.colors.map((c,k) => '<label title="RAL '+c[0]+' — '+c[1]+'"><input type="radio" name="p_ral" value="'+c[0]+'"'+(k===0?' checked':'')+'><i style="background:'+c[2]+'"></i></label>').join('');
+    rb.querySelectorAll('input').forEach(e => e.addEventListener('change', () => $('p_ral_hint').textContent = 'RAL ' + e.value + ' — ' + ralName(e.value)));
+  }
+  $('p_ral_hint').textContent = 'RAL ' + radio('p_ral') + ' — ' + ralName(radio('p_ral'));
+  // ангар
+  const ac = $('a_core').value || 'минвата';
+  opts($('a_wallThk'), PANEL_OPTS.thk['wall|'+ac].filter(t => t >= 80), 100);
+  opts($('a_roofThk'), PANEL_OPTS.thk['roof|'+ac].filter(t => t >= 80), 150);
+  if (!$('a_ral').children.length) opts($('a_ral'), PANEL_OPTS.colors.map(c => c[0]), 7024, v => 'RAL ' + v + ' — ' + ralName(v));
+}
+
 // ---------- Вкладки и подсказки ----------
 let tab = 'angar';
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
@@ -1064,8 +1126,7 @@ document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () =>
 function hints(){
   const L = num('a_len'), W = num('a_wid');
   $('a_area_hint').textContent = (L && W ? 'Площадь: ' + fmt(L*W) + ' м² · ' : '') + 'ширина (пролёт) 12–36 м, высота до карниза 4–14 м';
-  const th = radio('p_type') === 'roof' ? [120,150] : [100,120], sel = $('p_th'), cur = sel.value;
-  sel.innerHTML = th.map(t => '<option>'+t+'</option>').join(''); if (th.includes(+cur)) sel.value = cur;
+  panelOpts();
   $('a_load_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
   $('a_piles_box').classList.toggle('hidden', radio('a_fund') !== 'винтовые сваи');
 }
@@ -1077,7 +1138,8 @@ $('pol_link').addEventListener('click', e => { e.preventDefault(); $('policy').c
 function params(){
   if (tab === 'angar') {
     const p = { L: num('a_len'), W: num('a_wid'), H: num('a_h'), use: $('a_use').value, snowReg: $('a_snowReg').value,
-      wallThk: radio('a_wallThk'), roofThk: radio('a_roofThk'), fund: radio('a_fund'), floor: radio('a_floor'),
+      wallThk: $('a_wallThk').value, roofThk: $('a_roofThk').value, wallCore: $('a_core').value, roofCore: $('a_core').value, ral: $('a_ral').value,
+      fund: radio('a_fund'), floor: radio('a_floor'),
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
       flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
@@ -1086,7 +1148,8 @@ function params(){
     document.querySelectorAll('.more [data-f]').forEach(e => { if (e.value !== '') p[e.id.slice(2)] = e.value.replace(',', '.'); });
     return p;
   }
-  if (tab === 'panel') return { type: radio('p_type'), thk: +$('p_th').value, area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+  if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,
+    mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
 function check(p){
@@ -1097,7 +1160,7 @@ function check(p){
   }
   if (tab === 'panel' && (p.area < 10 || p.area > 100000)) return 'Площадь панелей — от 10 м².';
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
-  if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите НДС: 5 % или 22 %.'; }
+  if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }
   return '';
 }
 
