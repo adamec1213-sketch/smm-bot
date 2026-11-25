@@ -120,7 +120,7 @@ def final_cta(up, I, kp_q=''):
           <a class="chip" href="mailto:{C['email']}">{I['mail']}Почта</a>
         </div>
       </div>
-      <div class="cbox" style="background:linear-gradient(135deg,#2a2213,#141416 70%);border-color:#4a3d24">
+      <div class="cbox" style="background:linear-gradient(135deg,#F8EFDD,#FFFFFF 70%);border-color:#E9D6B0">
         <p>Хотите сначала понять бюджет?</p>
         <div style="font-size:22px;font-weight:800;margin:6px 0 10px">Посчитайте стоимость сами за 2 минуты</div>
         <p style="margin-bottom:20px">КП с разбивкой по позициям откроется сразу, его можно скачать в PDF.</p>
@@ -444,7 +444,7 @@ def politika(up, I):
 <section class="s"><div class="in prose">
   <div class="crumbs"><a href="{up}">Главная</a> / Политика конфиденциальности</div>
   <h1 style="font-size:clamp(28px,4vw,40px);font-weight:800">Политика обработки персональных данных</h1>
-  <p>Политика описывает, как РСК «Поколения» обрабатывает персональные данные посетителей сайта в соответствии с Федеральным законом № 152-ФЗ «О персональных данных».</p>
+  <p>Политика описывает, как РСК Групп обрабатывает персональные данные посетителей сайта в соответствии с Федеральным законом № 152-ФЗ «О персональных данных».</p>
   <h2>Какие данные мы получаем</h2>
   <p>Имя, номер телефона и город объекта, которые вы указываете в калькуляторе стоимости, а также параметры расчёта.</p>
   <h2>Зачем</h2>
@@ -475,24 +475,24 @@ def bc(name, path):
 
 
 PAGES = [
-    dict(path='', body=home, title='Коммерческая недвижимость под ключ в Москве и СПб — РСК «Поколения»',
+    dict(path='', body=home, title='Коммерческая недвижимость под ключ в Москве и СПб — РСК Групп',
          desc='Генподряд под ключ: склады, цеха, ангары, автосервисы. Прозрачная смета, 15+ лет, 200+ объектов. Рассчитайте стоимость за 2 минуты.',
          ld=faq_ld(['kapital','razr','teplo','fund','ot','vopr','kp'])),
-    dict(path='angary/', body=angary, og='inkub-1', title='Строительство ангаров под ключ в Москве и СПб — РСК «Поколения»',
+    dict(path='angary/', body=angary, og='inkub-1', title='Строительство ангаров под ключ в Москве и СПб — РСК Групп',
          desc='Тёплые ангары и склады из металлокаркаса и сэндвич-панелей. Смета с объёмами по каждой позиции, расчёт стоимости онлайн за 2 минуты.',
          ld=bc('Ангары под ключ', 'angary/')),
-    dict(path='sendvich-paneli/', body=paneli, og='bc-fasad', kp_q='?t=panel', title='Сэндвич-панели с минватой: поставка и монтаж — РСК «Поколения»',
+    dict(path='sendvich-paneli/', body=paneli, og='bc-fasad', kp_q='?t=panel', title='Сэндвич-панели с минватой: поставка и монтаж — РСК Групп',
          desc='Стеновые 100–120 мм и кровельные 120–150 мм сэндвич-панели с минватой. Доставка на объект, монтаж своей бригадой. Расчёт онлайн.',
          ld=bc('Сэндвич-панели', 'sendvich-paneli/')),
-    dict(path='metallokonstrukcii/', body=mk, og='bc-montazh', kp_q='?t=mk', title='Изготовление и монтаж металлоконструкций — РСК «Поколения»',
+    dict(path='metallokonstrukcii/', body=mk, og='bc-montazh', kp_q='?t=mk', title='Изготовление и монтаж металлоконструкций — РСК Групп',
          desc='Каркасы зданий, фермы, колонны, лестницы и навесы. Разработка КМД, окраска, доставка и монтаж. Расчёт стоимости онлайн.',
          ld=bc('Металлоконструкции', 'metallokonstrukcii/')),
-    dict(path='kp/', body=kp, no_fab=True, title='Калькулятор стоимости ангара — КП за 2 минуты | РСК «Поколения»',
+    dict(path='kp/', body=kp, no_fab=True, title='Калькулятор стоимости ангара — КП за 2 минуты | РСК Групп',
          desc='Рассчитайте стоимость ангара, сэндвич-панелей или металлоконструкций и сразу получите коммерческое предложение с разбивкой по позициям.',
          head=f'<style>\n{read("calc.css")}\n{read("deck.css")}</style>\n',
          foot=f'<script>\n{read("config.js")}\n</script>\n<script>\n{read("panels.js")}</script>\n<script>\n{read("deck.js")}</script>\n<script>\n{read("calc.js")}</script>'),
-    dict(path='politika/', body=politika, title='Политика обработки персональных данных — РСК «Поколения»',
-         desc='Как РСК «Поколения» обрабатывает персональные данные посетителей сайта.'),
-    dict(path='', file='404.html', abs=True, noindex=True, body=notfound, title='Страница не найдена — РСК «Поколения»',
+    dict(path='politika/', body=politika, title='Политика обработки персональных данных — РСК Групп',
+         desc='Как РСК Групп обрабатывает персональные данные посетителей сайта.'),
+    dict(path='', file='404.html', abs=True, noindex=True, body=notfound, title='Страница не найдена — РСК Групп',
          desc='Страница не найдена.'),
 ]

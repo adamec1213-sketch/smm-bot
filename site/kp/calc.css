@@ -95,3 +95,13 @@ input.bad{border-color:var(--err)}
 .swatches input{display:none}
 .swatches i{display:block;width:38px;height:38px;border-radius:10px;border:2px solid var(--line)}
 .swatches input:checked+i{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+
+/* Тема «РСК Групп»: светлая */
+:root{--bg:#F6F3EE; --card:#FFFFFF; --card2:#F7F3EC; --line:#E3DACA; --gold:#A0742C; --gold2:#8A6324; --txt:#211F24; --mut:#6B655D; --err:#B3261E}
+.tab.on,.seg input:checked+span{background:#F8EFDD}
+.live{background:#F8EFDD;border-color:#E9D6B0}
+.btn{color:#fff}
+.ok{background:#EEF7F1;border-color:#B9DCC6;color:#1E5A36}
+.fail{background:#FBEDEA;border-color:#EDC2B9;color:#7A2418}
+.card h2{text-transform:none;letter-spacing:0;font-size:17px;color:var(--txt);font-weight:800}
+.calc h1 b{color:inherit}

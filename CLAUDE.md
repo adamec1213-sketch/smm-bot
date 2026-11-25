@@ -22,9 +22,13 @@
 - Тексты: навыки `social`, `copywriting`, `content-strategy`; перед показом текста — прогон через `stop-slop` (убрать «ИИ-штампы»); видео — `video`; картинки — `image`.
 - Токен бессрочный; `refresh` нужен только для режима `IG_API=instagram`.
 
-## Фирменный стиль
-- Чёрный фон + золото `#D9B05E` (как логотип «Поколения»), шрифт Montserrat (`brand/fonts/`).
-- Логотип: `brand/logo.jpg`. Обложки Reels: `python brand/covers.py` → `drafts/covers/`.
+## Фирменный стиль (с 25.11.2026 — «РСК Групп»)
+- Компания называется **«РСК Групп»** (раньше РСК «Поколения»). Логотип: `brand/logo-rsk-grupp.jpg`
+  (на сайте: `docs/assets/img/logo-rsk.png`, `favicon-rsk.png`).
+- Светлый фон как на логотипе: крем `#F6F3EE`, графит `#211F24`, золото `#A0742C`, бордовый крана `#802028`; шрифт Montserrat (`brand/fonts/`).
+- Карусели: тема `light` в `brand/carousel_kapital_v2.py` (переменная `BRAND_THEME`, `dark` — старый стиль «Поколения»).
+- **Instagram (@prorab.artem): имя профиля и аватарку НЕ меняем** (решение владельца 25.11.2026).
+- Обложки Reels: `python brand/covers.py` → `drafts/covers/`.
 - Текст обложки держать в центральной зоне 3:4 (y 240–1680 из 1920), чтобы не обрезался в сетке.
 
 ## Сайт

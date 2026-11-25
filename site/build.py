@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Сборка сайта РСК «Поколения» в папку docs/ (её публикует GitHub Pages).
+"""Сборка сайта РСК Групп в папку docs/ (её публикует GitHub Pages).
 
     python3 site/build.py
 
@@ -57,8 +57,8 @@ def page(p):
     canon = BASE + p['path']
     ld = json.dumps(p.get('ld') or {}, ensure_ascii=False) if p.get('ld') else ''
     org = json.dumps({
-        "@context": "https://schema.org", "@type": "GeneralContractor", "name": "РСК «Поколения»",
-        "url": BASE, "logo": BASE + "assets/img/logo.jpg", "image": BASE + "assets/img/hero.jpg",
+        "@context": "https://schema.org", "@type": "GeneralContractor", "name": "РСК Групп",
+        "url": BASE, "logo": BASE + "assets/img/logo-rsk-circle.jpg", "image": BASE + "assets/img/hero.jpg",
         "telephone": C['phone_raw'], "email": C['email'], "foundingDate": "2011",
         "areaServed": ["Москва", "Московская область", "Санкт-Петербург", "Ленинградская область"],
         "sameAs": [C['instagram'], C['telegram']]}, ensure_ascii=False)
@@ -79,7 +79,7 @@ def page(p):
 <meta property="og:url" content="{canon}">
 <meta property="og:locale" content="ru_RU">
 <meta name="theme-color" content="#0b0b0c">
-<link rel="icon" href="{up}assets/img/logo.jpg">
+<link rel="icon" href="{up}assets/img/favicon-rsk.png">
 <link rel="preload" href="{up}assets/fonts/Montserrat-800.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="stylesheet" href="{up}assets/site.css">
 {p.get('head','')}<script type="application/ld+json">{org}</script>
@@ -87,7 +87,7 @@ def page(p):
 </head>
 <body class="{'' if p.get('no_fab') else 'has-fab'}">
 <header class="site-head noprint"><div class="in">
-  <a class="brand" href="{up or './'}"><img src="{up}assets/img/logo.jpg" alt="" width="42" height="42"><span><b>РСК «Поколения»</b><small>Генподряд под ключ</small></span></a>
+  <a class="brand" href="{up or './'}" aria-label="РСК Групп — на главную"><img class="lockup" src="{up}assets/img/logo-rsk.png" alt="РСК Групп" width="118" height="48"></a>
   <nav class="nav" aria-label="Основное меню">{nav}</nav>
   <a class="head-tel" href="tel:{C['phone_raw']}">{C['phone']}</a>
   <a class="cta sm cta-head" href="{up}kp/">Рассчитать стоимость</a>
@@ -98,13 +98,13 @@ def page(p):
 </main>
 <footer class="site-foot noprint"><div class="in">
   <div class="cols">
-    <div><a class="brand" href="{up or './'}"><img src="{up}assets/img/logo.jpg" alt="" width="42" height="42"><span><b style="color:var(--txt)">РСК «Поколения»</b><small>Коммерческая недвижимость под ключ</small></span></a>
+    <div><a class="brand" href="{up or './'}" aria-label="РСК Групп — на главную"><img class="lockup" src="{up}assets/img/logo-rsk.png" alt="РСК Групп" width="128" height="52"></a>
       <p style="margin-top:16px">Склады, цеха, ангары и коммерческие здания в Москве, Санкт-Петербурге и областях. Строим с 2011 года.</p></div>
     <div><h4>Услуги</h4><a href="{up}angary/">Ангары под ключ</a><a href="{up}sendvich-paneli/">Сэндвич-панели</a><a href="{up}metallokonstrukcii/">Металлоконструкции</a><a href="{up}kp/">Калькулятор стоимости</a></div>
     <div><h4>Компания</h4><a href="{up}#obekty">Объекты</a><a href="{up}#etapy">Этапы работ</a><a href="{up}#voprosy">Вопросы</a><a href="{up}politika/">Политика конфиденциальности</a></div>
     <div><h4>Контакты</h4><a href="tel:{C['phone_raw']}">{C['phone']}</a><a href="mailto:{C['email']}">{C['email']}</a><a href="{C['telegram']}" target="_blank" rel="noopener">Telegram</a><a href="{C['instagram']}" target="_blank" rel="noopener">Instagram @prorab.artem</a></div>
   </div>
-  <div class="bottom"><span>© 2011–2026 РСК «Поколения»</span><span>Информация на сайте не является публичной офертой</span></div>
+  <div class="bottom"><span>© 2011–2026 РСК Групп</span><span>Информация на сайте не является публичной офертой</span></div>
 </div></footer>
 {fab}
 {p.get('foot','')}

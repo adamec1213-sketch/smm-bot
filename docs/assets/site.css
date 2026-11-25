@@ -260,3 +260,55 @@ section.light .checks li span{color:var(--inkmut)}
 .dim span{white-space:nowrap}
 .dim .sm{display:none}
 @media(max-width:560px){.dim{font-size:13px;gap:10px}.dim .lg{display:none}.dim .sm{display:inline}}
+
+/* =====================================================================
+   Тема «РСК Групп» (с 25.11.2026): светлый фон как на логотипе.
+   Цвета логотипа: крем #F6F3EE, графит #211F24, золото #A0742C, бордовый крана #802028.
+   Тёмными остаются только блоки поверх фото стройки (первый экран, карточки услуг).
+   ===================================================================== */
+:root{
+  --bg:#F6F3EE; --bg2:#EFEAE1; --card:#FFFFFF; --card2:#F7F3EC; --line:#E3DACA;
+  --gold:#A0742C; --gold2:#8A6324; --txt:#211F24; --mut:#6B655D; --crane:#802028;
+  --light:#FFFFFF; --ink:#211F24; --inkmut:#6B655D;
+}
+body{background:var(--bg);color:var(--txt)}
+.site-head{background:rgba(246,243,238,.94);border-bottom-color:var(--line)}
+.brand img.lockup{width:auto;height:48px;border-radius:0}
+.site-foot .brand img.lockup{height:52px}
+.nav a{color:var(--txt)}
+.menu .drop a{border-bottom-color:var(--line)}
+.cta{color:#fff}
+.cta:hover{background:var(--gold2)}
+.cta.line{color:var(--gold);border-color:var(--gold)}
+.cta.line:hover{background:#F3EADB}
+section.alt{border-color:var(--line)}
+.tile .ic{background:#F8EFDD;border-color:#E9D6B0;color:var(--gold)}
+.tile.gold{color:#fff}.tile.gold p{color:#F6ECD8}.tile.gold .ic{background:#fff;border-color:#fff}
+section.light .tile{border-color:var(--line)}
+section.light .tile .ic{background:#F8EFDD;border-color:#E9D6B0;color:var(--gold)}
+.promo{background:linear-gradient(135deg,#FBF6EC,#FFFFFF 60%);border-color:#E9D6B0}
+.promo li b{color:#fff}
+.promo li span{color:var(--mut)}
+.kp-mock{box-shadow:0 24px 50px rgba(60,45,20,.16)}
+.obj .tag{color:#fff}
+.faq .a{color:var(--mut)}
+.final .bgimg{opacity:.1}
+.cbox{background:#fff}
+.prose,.prose p,.prose li{color:var(--txt)}
+.site-foot,.site-foot .bottom{border-color:var(--line)}
+.checks li:before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")}
+@media(max-width:700px){.fab .cta{box-shadow:0 10px 26px rgba(60,45,20,.25)}.fab .tel{background:#fff}}
+.page-hero{border-bottom-color:var(--line)}
+.page-hero img.bg{opacity:.22}
+.page-hero:after{background:linear-gradient(90deg,var(--bg) 25%,rgba(246,243,238,.55))}
+.page-hero .lead{color:var(--mut)}
+/* поверх фото — тёмные блоки, светлое золото */
+.hero,.dir{--gold:#D9B05E;--gold2:#c79f50;color:#F6F3EE}
+.hero{border-bottom:0}
+.hero .lead{color:#E4DDD0}
+.hero .cta{color:#1d170c}
+.hero .cta.line{color:var(--gold)}
+.hero .cta.line:hover{background:rgba(217,176,94,.12)}
+.dir{border-color:transparent}
+.dir p{color:#E0D9CC}
+:focus-visible{outline:2.5px solid var(--gold);outline-offset:2px}

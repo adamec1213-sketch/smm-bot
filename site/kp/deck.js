@@ -14,7 +14,7 @@ const LET = 'АБВГДЕЖИКЛМНПРСТУФХЦШЭЮЯ';
 // ---------- общие куски слайда ----------
 function head(title, accent) {
   return '<div class="d-head"><h2>' + esc(title) + (accent ? ' <em>' + esc(accent) + '</em>' : '') + '</h2>' +
-    '<div class="d-logo"><img src="' + A + 'logo-icon.png" alt=""><span>«РСК»<br>ПОКОЛЕНИЯ</span></div></div><i class="d-bar"></i>';
+    '<div class="d-logo"><img class="lk" src="' + A + 'logo-rsk.png" alt="РСК Групп"></div></div><i class="d-bar"></i>';
 }
 function facts(list) {
   return '<div class="d-facts">' + list.filter(Boolean).map(f => '<div><b>' + esc(f[0]) + '</b><span>' + esc(f[1]) + '</span></div>').join('') + '</div>';
@@ -268,12 +268,12 @@ function renderDeck(r, client, no, days, C) {
   const desc = ang ? 'Металлокаркас, сэндвич-панели ' + (v.wallThk || '') + '/' + (v.roofThk || '') + ' мм, высота до карниза ' + nf(g.H, 1) + ' м, ' +
     (g.fund === 'монолит' ? 'монолитный фундамент' : 'винтовые сваи') + (g.floor === 'нет' ? '' : ', ' + (g.floor === 'плиты ПАГ' ? 'пол из плит ПАГ' : 'монолитная плита пола')) : r.title;
   S.push('<div class="d-cover"><div class="d-cl">' +
-    '<div class="d-brand"><img src="' + A + 'logo-icon.png" alt=""><span>«РСК»<br>ПОКОЛЕНИЯ</span><i></i><small>КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ<br>ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ · № ' + esc(no) + '</small></div>' +
+    '<div class="d-brand"><img class="lk" src="' + A + 'logo-rsk.png" alt="РСК Групп"><i></i><small>КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ<br>ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ · № ' + esc(no) + '</small></div>' +
     '<div class="d-kick">' + esc(sub.toUpperCase()) + '</div>' + coverTitle() + '<i class="d-bar"></i>' +
     '<p class="d-desc">' + esc(desc) + '</p><p class="d-meta">Для: ' + esc(client.name) + (client.city ? ', ' + esc(client.city) : '') + '<br>от ' + ds(d0) + ', действует до ' + ds(until) + '</p>' +
     '<div class="d-stats"><div class="gold"><b>15+ лет</b><span>успешной реализации объектов с 2011 года</span></div><div><b>200+</b><span>завершённых объектов промышленного и коммерческого строительства</span></div></div></div>' +
     '<div class="d-cr">' + (ang ? '<div class="d-iso">' + isoBuilding(g) + '</div>' : '<img class="d-ph" src="' + A + (r.kind === 'Сэндвич-панели' ? 'bc-fasad' : 'bc-montazh') + '-s.jpg" alt="">') +
-    '<div class="d-contact"><div><b>РСК «ПОКОЛЕНИЯ»</b><span>Строительная компания</span></div><div class="r"><b>' + esc(C.phone) + '</b><span>' + esc(C.email) + '</span></div></div></div></div>');
+    '<div class="d-contact"><div><b>РСК ГРУПП</b><span>Строительная компания</span></div><div class="r"><b>' + esc(C.phone) + '</b><span>' + esc(C.email) + '</span></div></div></div></div>');
 
   // 2. Предложение в цифрах
   const steel = f.steelT || (r.items.find(i => /^Изготовление металлоконструкций/.test(i[0])) || [])[1];
@@ -287,7 +287,7 @@ function renderDeck(r, client, no, days, C) {
     '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
     (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
     '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
-    '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК «Поколения» по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
+    '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК Групп по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
     (ang ? '<div class="d-row2"><div class="d-pic">' + isoBuilding(g) + '</div><div class="d-term"><small>СРОК МОНТАЖА</small><b>≈ ' + nf(r.days || 0) + ' дней</b><span>каркас, стены и кровля — по графику калькулятора; полы и отделка — по графику после договора</span></div></div>' : ''));
 
   if (ang) {
@@ -396,12 +396,12 @@ function renderDeck(r, client, no, days, C) {
     (withVat ? '<li>Все цены с НДС ' + esc(vat) + ': итог <b>' + rub(r.total) + '</b>, в том числе НДС ' + rub(vatSum) + '.</li>' : '<li>Все цены без НДС: итог <b>' + rub(r.total) + '</b>.</li>') +
     (r.days ? '<li>Монтаж каркаса, стен и кровли — около ' + nf(r.days) + ' дней; полы и отделка — по графику после договора.</li>' : '') +
     '<li>КП № ' + esc(no) + ' действует до ' + ds(until) + '. Оплату и сроки согласуем в договоре.</li></ul></div>' +
-    '<div class="d-cards"><div class="dark"><b>РСК «ПОКОЛЕНИЯ»</b><span>Строительная компания</span><em>' + esc(C.phone) + '</em><em>' + esc(C.email) + '</em></div>' +
+    '<div class="d-cards"><div class="dark"><b>РСК ГРУПП</b><span>Строительная компания</span><em>' + esc(C.phone) + '</em><em>' + esc(C.email) + '</em></div>' +
     '<div class="gold">Отправьте вводные — подготовим расчёт, проконсультируем и предложим оптимальное решение.</div></div>' +
     '<div class="d-qr"><img src="' + A + 'qr-telegram.svg" alt="QR Telegram"><b>Telegram-канал</b><span>@spbpokoleniya</span><small>стройка изнутри, цены и объекты</small></div></div>' +
     '<div class="d-band"><img src="' + A + 'kaska-s.jpg" alt=""><div><b>ОДИН ПОДРЯДЧИК НА ВЕСЬ ЦИКЛ</b><span>меньше рисков, быстрее запуск, предсказуемый результат</span></div></div>');
 
-  const foot = 'РСК ПОКОЛЕНИЯ · ПРЕДВАРИТЕЛЬНОЕ КП № ' + esc(no) + ' · ' + esc(title.toUpperCase());
+  const foot = 'РСК ГРУПП · ПРЕДВАРИТЕЛЬНОЕ КП № ' + esc(no) + ' · ' + esc(title.toUpperCase());
   const fixSvg = h => h.replace(/<svg viewBox="([-\d. ]+)"/g, (m, vb) => { const q = vb.trim().split(/\s+/); return m + ' style="aspect-ratio:' + q[2] + '/' + q[3] + '"'; });
   return S.map(fixSvg).map((s, i) => '<section class="slide' + (i === 0 ? ' first' : '') + '">' + s + (i ? '<footer class="d-foot"><span>' + foot + '</span><span>' + (i + 1) + ' / ' + S.length + '</span></footer>' : '') + '</section>').join('');
 }

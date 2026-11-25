@@ -1,5 +1,5 @@
 /* ===== КП-презентация 16:9 (размеры в cqw: calc(1*var(--u)) = 1% ширины слайда) ===== */
-.deck{--u:1cqw;display:grid;gap:18px;--g:#D9B05E;--gd:#b8924a;--ink:#17150f;--mut:#6b665c;--bd:#ece5d6;--cream:#faf6ec}
+.deck{--u:1cqw;display:grid;gap:18px;--g:#C99A4B;--gd:#A0742C;--ink:#17150f;--mut:#6b665c;--bd:#ece5d6;--cream:#faf6ec}
 .slide{container-type:inline-size;position:relative;width:100%;aspect-ratio:16/9;background:#fff;color:var(--ink);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:Montserrat,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .slide>*{box-sizing:border-box}
 .slide{padding:calc(3.6*var(--u)) calc(4.6*var(--u)) calc(5*var(--u))}
@@ -280,3 +280,7 @@
   .d-band b{font-size:16px}
   .d-band span{font-size:12px}
 }
+
+/* «РСК Групп»: логотип-плашка */
+.d-logo img.lk{width:auto;height:calc(3.4*var(--u))}
+.d-brand img.lk{width:auto;height:calc(4.2*var(--u))}

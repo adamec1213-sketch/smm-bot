@@ -4,7 +4,7 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVxlBqPRHID-NbHi3Zu_CJCcJWQySlslrnyV3NKmBQ-7Adoz44Rbz2JJ4GpIxfswRTRA/exec';
 
 const COMPANY = {
-  name: 'РСК «Поколения»',
+  name: 'РСК Групп',
   phone: '+7 981 908-22-97',
   phoneHref: 'tel:+79819082297',
   email: 'rsk-47@bk.ru',
