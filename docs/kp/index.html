@@ -486,9 +486,6 @@ input.bad{border-color:var(--err)}
       <div><label class="f">Двери, шт</label><input type="number" id="a_doors" value="1" min="0" max="30" inputmode="numeric"></div>
     </div>
     <div class="hint">Ворота секционные 2 × 2,5 м. Другие размеры — уточним при звонке.</div>
-    <div style="margin-top:16px"><div><label class="f">Фасонные элементы (уголки, нащельники, отливы)</label><div class="seg"><label><input type="radio" name="a_flash" value="да" checked><span>Нужны</span></label><label><input type="radio" name="a_flash" value="нет"><span>Не нужны</span></label></div></div></div>
-    <div style="margin-top:16px"><div><label class="f">Водосток и снегозадержатели</label><div class="seg"><label><input type="radio" name="a_gutter" value="да" checked><span>Нужны</span></label><label><input type="radio" name="a_gutter" value="нет"><span>Не нужны</span></label></div></div></div>
-    <div style="margin-top:16px"><div><label class="f">Доставка металла и панелей</label><div class="seg"><label><input type="radio" name="a_delivery" value="да" checked><span>Нужна</span></label><label><input type="radio" name="a_delivery" value="нет"><span>Не нужна</span></label></div></div></div>
   </section>
 
   </div>
@@ -1135,7 +1132,7 @@ function params(){
       wallThk: $('a_wallThk').value, roofThk: $('a_roofThk').value, wallCore: $('a_core').value, roofCore: $('a_core').value, ral: $('a_ral').value,
       fund: radio('a_fund'), floor: radio('a_floor'),
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
-      flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
+      flash: 'нет', gutter: 'нет', vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
     if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = 'нет'; }
     return p;

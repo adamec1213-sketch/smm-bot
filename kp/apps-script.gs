@@ -63,8 +63,8 @@ const FIELDS = {
   gates:     { label: 'Ворота, шт', name: 'Ворота', unit: 'шт', min: 0, max: 30, int: true },
   windows:   { label: 'Окна, м²', name: 'Окна', unit: 'м²', min: 0, max: 2000 },
   doors:     { label: 'Двери, шт', name: 'Двери', unit: 'шт', min: 0, max: 30, int: true },
-  flash:     { label: 'Фасонные элементы включить в смету', name: 'Фасонные элементы', list: YN },
-  gutter:    { label: 'Водосток и снегозадержание', name: 'Водосток и снегозадержатели', list: YN },
+  flash:     { label: 'Фасонные элементы включить в смету', name: 'Фасонные элементы', list: YN, hide: true },   // сайт шлёт «нет»
+  gutter:    { label: 'Водосток и снегозадержание', name: 'Водосток и снегозадержатели', list: YN, hide: true },   // сайт шлёт «нет»
   delivery:  { label: 'Доставка металла и панелей', name: 'Доставка', list: YN },
   vat:       { label: 'НДС для клиента (выберите «без НДС» или «22 %»)', name: 'НДС', list: ['без НДС', '22 %'] }
 };

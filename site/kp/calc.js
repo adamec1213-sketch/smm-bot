@@ -63,7 +63,7 @@ function params(){
       wallThk: $('a_wallThk').value, roofThk: $('a_roofThk').value, wallCore: $('a_core').value, roofCore: $('a_core').value, ral: $('a_ral').value,
       fund: radio('a_fund'), floor: radio('a_floor'),
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
-      flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
+      flash: 'нет', gutter: 'нет', vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
     if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = 'нет'; }
     return p;
