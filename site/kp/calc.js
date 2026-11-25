@@ -49,7 +49,7 @@ function hints(){
   const L = num('a_len'), W = num('a_wid');
   $('a_area_hint').textContent = (L && W ? 'Площадь: ' + fmt(L*W) + ' м² · ' : '') + 'ширина (пролёт) 12–36 м, высота до карниза 4–14 м';
   panelOpts();
-  $('a_load_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
+  $('a_slab_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
   $('a_piles_box').classList.toggle('hidden', radio('a_fund') !== 'винтовые сваи');
 }
 document.querySelectorAll('#form input, #form select').forEach(e => e.addEventListener('change', hints));
@@ -59,15 +59,13 @@ $('pol_link').addEventListener('click', e => { e.preventDefault(); $('policy').c
 
 function params(){
   if (tab === 'angar') {
-    const p = { L: num('a_len'), W: num('a_wid'), H: num('a_h'), use: $('a_use').value, snowReg: $('a_snowReg').value,
+    const p = { L: num('a_len'), W: num('a_wid'), H: num('a_h'), use: $('a_use').value,
       wallThk: $('a_wallThk').value, roofThk: $('a_roofThk').value, wallCore: $('a_core').value, roofCore: $('a_core').value, ral: $('a_ral').value,
       fund: radio('a_fund'), floor: radio('a_floor'),
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
       flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
-    if (p.floor === 'монолитная плита' && $('a_floorLoad').value) p.floorLoad = num('a_floorLoad');
-    // «Для инженеров»: отправляем только то, что клиент заполнил, остальное — как в таблице
-    document.querySelectorAll('.more [data-f]').forEach(e => { if (e.value !== '') p[e.id.slice(2)] = e.value.replace(',', '.'); });
+    if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = radio('a_xps'); }
     return p;
   }
   if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,

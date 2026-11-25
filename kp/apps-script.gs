@@ -57,6 +57,9 @@ const FIELDS = {
   fund:      { label: 'Фундамент', name: 'Фундамент', list: ['винтовые сваи', 'монолит'] },
   piles:     { label: 'Свай под одну колонну, шт', name: 'Свай под колонну', unit: 'шт', min: 1, max: 9, int: true },
   floor:     { label: 'Пол', name: 'Пол', list: ['монолитная плита', 'плиты ПАГ', 'нет'], show: { 'нет': 'не нужен' } },
+  slabMode:  { label: 'Плита пола: подбор толщины', name: 'Подбор толщины плиты', list: ['по нагрузке', 'вручную'], hide: true },
+  slabT:     { label: 'Толщина монолитной плиты, мм', name: 'Толщина бетонной плиты', unit: 'мм', list: [180, 200, 250, 300] },
+  xps:       { label: 'Утепление под плитой ПЕНОПЛЭКС 50 мм', name: 'Утепление под плитой', list: YN },
   gates:     { label: 'Ворота, шт', name: 'Ворота', unit: 'шт', min: 0, max: 30, int: true },
   windows:   { label: 'Окна, м²', name: 'Окна', unit: 'м²', min: 0, max: 2000 },
   doors:     { label: 'Двери, шт', name: 'Двери', unit: 'шт', min: 0, max: 30, int: true },
@@ -233,6 +236,7 @@ function calcAngar_(p) {
     Object.keys(v).forEach(key => {
       if (['L', 'W', 'H'].indexOf(key) >= 0) return;
       const f = FIELDS[key];
+      if (f.hide) return;
       const val = f.show && f.show[v[key]] ? f.show[v[key]] : v[key];
       params.push([f.name, (typeof val === 'number' ? String(val).replace('.', ',') : String(val)) + (f.unit ? (f.unit === '°' ? '' : ' ') + f.unit : '')]);
     });

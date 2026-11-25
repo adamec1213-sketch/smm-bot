@@ -249,6 +249,8 @@ function renderDeck(r, client, no, days, C) {
   const ang = r.kind === 'Ангар под ключ', g = ang ? geom(r) : null, f = r.facts || {}, v = r.input || {};
   const vat = (r.params.find(p => p[0] === 'НДС') || [0, ''])[1];
   const vatSum = r.vatTotal || 0;
+  const withVat = vat === '22 %' || vat === '5 %';
+  const vl = withVat ? 'с НДС ' + vat : 'без НДС', VL = vl.toUpperCase();
   const d0 = new Date(), until = new Date(d0.getTime() + days * 864e5), ds = x => x.toLocaleDateString('ru-RU');
   const title = ang ? 'Ангар ' + nf(g.L, 1) + ' × ' + nf(g.W, 1) + ' м' : r.kind;
   const sub = ang ? (v.use || 'Склад') + (client.city ? ' · ' + client.city : '') : (client.city || '');
@@ -281,8 +283,8 @@ function renderDeck(r, client, no, days, C) {
     f.slabV ? [nf(f.slabV, 1) + ' м³', 'бетона в плите пола ' + nf(f.slabT) + ' мм'] : f.piles ? [nf(f.piles) + ' шт', 'винтовых свай под колонны'] : f.footings ? [nf(f.footings) + ' шт', 'монолитных фундаментов под колонны'] : null,
     f.wallM2 ? [nf(f.wallM2) + ' м²', 'стеновых сэндвич-панелей; кровля ' + nf(f.roofM2 || 0) + ' м²'] : null
   ].filter(Boolean) : r.params.slice(0, 4).map(p => [p[1], p[0]]);
-  S.push(head('Предложение в цифрах') + '<div class="d-kpis"><div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' +
-    '<div class="dark"><small>ИТОГО С НДС ' + esc(vat) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
+  S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
+    '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
     (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
     '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
     '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК «Поколения» по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
@@ -345,7 +347,7 @@ function renderDeck(r, client, no, days, C) {
     const max = gr.reduce((m, y) => Math.max(m, y.sum), 0);
     return '<div class="' + (x.sum === max ? 'dark' : '') + '"><small>' + esc(x.name.toUpperCase()) + '</small><b>' + rub(x.sum) + ' <em>' + pct(x.sum, tot) + '</em></b><ul>' +
       top.map(t => '<li>' + esc(t[0].replace(/\s*\(.*?\)\s*/g, ' ').trim()) + ': ' + rub(t[4]) + '</li>').join('') + '</ul></div>';
-  }).join('') + '</div><div class="d-total"><span>Итого с НДС ' + esc(vat) + '</span><b>' + rub(r.total) + '</b><span>в том числе НДС: <b>' + rub(vatSum) + '</b></span></div>');
+  }).join('') + '</div><div class="d-total"><span>Итого ' + esc(vl) + '</span><b>' + rub(r.total) + '</b>' + (withVat ? '<span>в том числе НДС: <b>' + rub(vatSum) + '</b></span>' : '') + '</div>');
 
   // Стоимость по разделам (таблицы по ~13 строк)
   const rows = []; let n = 0;
@@ -353,10 +355,10 @@ function renderDeck(r, client, no, days, C) {
   const per = 15, pages = Math.max(1, Math.ceil(rows.length / per));
   for (let p = 0; p < pages; p++) {
     const part = rows.slice(p * per, (p + 1) * per), last = p === pages - 1;
-    S.push(head('Стоимость по разделам' + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена с НДС, ₽</th><th class="n">Сумма с НДС, ₽</th></tr></thead><tbody>' +
+    S.push(head('Стоимость по разделам' + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена' + (withVat ? ' с НДС' : '') + ', ₽</th><th class="n">Сумма' + (withVat ? ' с НДС' : '') + ', ₽</th></tr></thead><tbody>' +
       part.map(x => x.h ? '<tr class="grp"><td></td><td>' + esc(x.h.toUpperCase()) + '</td><td></td><td></td><td class="n">' + nf(Math.round(x.sum)) + '</td></tr>'
         : '<tr><td>' + x.n + '</td><td>' + esc(x.it[0]) + '</td><td class="n">' + nf(x.it[1], x.it[1] % 1 ? 1 : 0) + ' ' + esc(x.it[2]) + '</td><td class="n">' + nf(x.it[3], 2) + '</td><td class="n">' + nf(Math.round(x.it[4])) + '</td></tr>').join('') +
-      '</tbody>' + (last ? '<tfoot><tr class="vat"><td></td><td>В том числе НДС ' + esc(vat) + '</td><td></td><td></td><td class="n">' + nf(Math.round(vatSum)) + '</td></tr><tr><td></td><td>Итого с НДС ' + esc(vat) + '</td><td></td><td class="n">' + (ang ? nf(Math.round(r.total / g.L / g.W)) + ' за м²' : '') + '</td><td class="n">' + nf(Math.round(r.total)) + '</td></tr></tfoot>' : '') +
+      '</tbody>' + (last ? '<tfoot>' + (withVat ? '<tr class="vat"><td></td><td>В том числе НДС ' + esc(vat) + '</td><td></td><td></td><td class="n">' + nf(Math.round(vatSum)) + '</td></tr>' : '') + '<tr><td></td><td>Итого ' + esc(vl) + '</td><td></td><td class="n">' + (ang ? nf(Math.round(r.total / g.L / g.W)) + ' за м²' : '') + '</td><td class="n">' + nf(Math.round(r.total)) + '</td></tr></tfoot>' : '') +
       '</table>' + (last && r.notes.length ? '<p class="d-note">' + r.notes.map(esc).join(' ') + '</p>' : ''));
   }
 
@@ -391,7 +393,7 @@ function renderDeck(r, client, no, days, C) {
   // Финал
   S.push(head('Строим так, чтобы ваш бизнес', 'начал зарабатывать раньше') + '<div class="d-final"><div class="d-cond"><h3>УСЛОВИЯ</h3><ul>' +
     '<li>Расчёт предварительный: сделан автоматически по введённым параметрам, уточняется после ТЗ, геологии и чертежей КМД.</li>' +
-    '<li>Все цены с НДС ' + esc(vat) + ': итог <b>' + rub(r.total) + '</b>, в том числе НДС ' + rub(vatSum) + '.</li>' +
+    (withVat ? '<li>Все цены с НДС ' + esc(vat) + ': итог <b>' + rub(r.total) + '</b>, в том числе НДС ' + rub(vatSum) + '.</li>' : '<li>Все цены без НДС: итог <b>' + rub(r.total) + '</b>.</li>') +
     (r.days ? '<li>Монтаж каркаса, стен и кровли — около ' + nf(r.days) + ' дней; полы и отделка — по графику после договора.</li>' : '') +
     '<li>КП № ' + esc(no) + ' действует до ' + ds(until) + '. Оплату и сроки согласуем в договоре.</li></ul></div>' +
     '<div class="d-cards"><div class="dark"><b>РСК «ПОКОЛЕНИЯ»</b><span>Строительная компания</span><em>' + esc(C.phone) + '</em><em>' + esc(C.email) + '</em></div>' +

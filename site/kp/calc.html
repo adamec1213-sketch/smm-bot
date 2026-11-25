@@ -20,7 +20,6 @@
     <div class="hint" id="a_area_hint">Ширина (пролёт) 12–36 м, высота до карниза 4–14 м</div>
     <div class="grid" style="margin-top:16px">
       <div><label class="f">Назначение</label><select id="a_use"><option>Склад</option><option>Производство / цех</option><option>Автосервис</option><option>Торговый объект</option><option>Сельское хозяйство</option><option>Другое</option></select></div>
-      <div><label class="f">Снеговой район</label><select id="a_snowReg" data-f><option value="I">I</option><option value="II">II</option><option value="III" selected>III — Москва, Санкт-Петербург</option><option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option><option value="VII">VII</option><option value="VIII">VIII</option></select><div class="hint">Москва и СПб с областями — III. Другие города — по карте СП 20.13330</div></div>
     </div>
   </section>
 
@@ -37,13 +36,22 @@
 
   <section class="card">
     <h2>Фундамент и пол</h2>
-    <div><label class="f">Фундамент</label><div class="seg"><label><input type="radio" name="a_fund" value="винтовые сваи" checked><span>Винтовые сваи</span></label><label><input type="radio" name="a_fund" value="монолит"><span>Монолит</span></label></div></div>
+    <div><label class="f">Фундамент</label><div class="seg"><label><input type="radio" name="a_fund" value="монолит" checked><span>Монолитный</span></label><label><input type="radio" name="a_fund" value="винтовые сваи"><span>Винтовые сваи</span></label></div></div>
     <div class="grid" style="margin-top:16px">
       <div id="a_piles_box"><label class="f">Свай под одну колонну, шт</label><input type="number" id="a_piles" data-f placeholder="2" step="1" inputmode="decimal" value="2"></div>
     </div>
     <div style="margin-top:16px"><div><label class="f">Пол</label><div class="seg"><label><input type="radio" name="a_floor" value="монолитная плита" checked><span>Бетонный</span></label><label><input type="radio" name="a_floor" value="плиты ПАГ"><span>Плиты ПАГ</span></label><label><input type="radio" name="a_floor" value="нет"><span>Не нужен</span></label></div></div></div>
-    <div class="grid" style="margin-top:16px">
-      <div id="a_load_box"><label class="f">Нагрузка на пол, т/м²</label><input type="number" id="a_floorLoad" data-f placeholder="1" step="0.5" inputmode="decimal" value="1"><div class="hint">Обычный склад — 1, стеллажи и погрузчики — 3, тяжёлое производство — 5</div></div>
+    <div id="a_slab_box">
+      <div style="margin-top:16px"><label class="f">Толщина бетонной плиты, мм</label><div class="seg">
+        <label><input type="radio" name="a_slabT" value="180" checked><span>180</span></label>
+        <label><input type="radio" name="a_slabT" value="200"><span>200</span></label>
+        <label><input type="radio" name="a_slabT" value="250"><span>250</span></label>
+        <label><input type="radio" name="a_slabT" value="300"><span>300</span></label>
+      </div><div class="hint">Песчаная и щебёночная подушка входит в цену плиты.</div></div>
+      <div style="margin-top:16px"><label class="f">Утепление под плитой (ПЕНОПЛЭКС 50 мм)</label><div class="seg">
+        <label><input type="radio" name="a_xps" value="да" checked><span>Нужно</span></label>
+        <label><input type="radio" name="a_xps" value="нет"><span>Не нужно</span></label>
+      </div><div class="hint">Для тёплого склада: пол не промерзает.</div></div>
     </div>
   </section>
 
@@ -54,38 +62,12 @@
       <div><label class="f">Окна, м²</label><input type="number" id="a_win" value="0" min="0" max="2000" inputmode="numeric"></div>
       <div><label class="f">Двери, шт</label><input type="number" id="a_doors" value="1" min="0" max="30" inputmode="numeric"></div>
     </div>
-    <div class="hint">Ворота секционные 3×3,5 м с автоматикой</div>
+    <div class="hint">Ворота секционные 2 × 2,5 м. Другие размеры — уточним при звонке.</div>
     <div style="margin-top:16px"><div><label class="f">Фасонные элементы (уголки, нащельники, отливы)</label><div class="seg"><label><input type="radio" name="a_flash" value="да" checked><span>Нужны</span></label><label><input type="radio" name="a_flash" value="нет"><span>Не нужны</span></label></div></div></div>
     <div style="margin-top:16px"><div><label class="f">Водосток и снегозадержатели</label><div class="seg"><label><input type="radio" name="a_gutter" value="да" checked><span>Нужны</span></label><label><input type="radio" name="a_gutter" value="нет"><span>Не нужны</span></label></div></div></div>
     <div style="margin-top:16px"><div><label class="f">Доставка металла и панелей</label><div class="seg"><label><input type="radio" name="a_delivery" value="да" checked><span>Нужна</span></label><label><input type="radio" name="a_delivery" value="нет"><span>Не нужна</span></label></div></div></div>
   </section>
 
-  <details class="card more">
-    <summary><h2 style="margin:0">Для инженеров <small>необязательно</small></h2></summary>
-    <p class="hint" style="margin:10px 0 16px">Если не знаете — оставьте «как в расчёте по умолчанию», инженер уточнит при звонке.</p>
-    <h3 class="sub3">Каркас</h3>
-    <div class="grid">
-      <div><label class="f">Схема каркаса</label><select id="a_scheme" data-f><option value="">Как в расчёте по умолчанию</option><option value="КП (фермы)">Рамы с фермами</option><option value="П³ (балки)">Рамы из балок</option></select></div>
-      <div><label class="f">Марка стали</label><select id="a_steel" data-f><option value="">Как в расчёте по умолчанию</option><option value="С255">С255</option><option value="С355">С355</option></select></div>
-      <div><label class="f">Шаг рам, м</label><input type="number" id="a_step" data-f placeholder="6" step="any" inputmode="decimal"></div>
-      <div><label class="f">Уклон кровли, °</label><input type="number" id="a_slope" data-f placeholder="5,71 (10 %)" step="any" inputmode="decimal"></div>
-      <div><label class="f">Фахверковые колонны на торцах</label><select id="a_fachwerk" data-f><option value="">Как в расчёте по умолчанию</option><option value="да">Да</option><option value="нет">Нет</option></select></div>
-      <div><label class="f">Раскладка стеновых панелей</label><select id="a_layout" data-f><option value="">Как в расчёте по умолчанию</option><option value="вертикальная">Вертикальная</option><option value="горизонтальная">Горизонтальная</option></select></div>
-      <div><label class="f">Свес кровли по торцам, м</label><input type="number" id="a_ovhEnd" data-f placeholder="авто" step="any" inputmode="decimal"></div>
-      <div><label class="f">Свес кровли по карнизу, м</label><input type="number" id="a_ovhEave" data-f placeholder="авто" step="any" inputmode="decimal"></div>
-      <div><label class="f">Снеговая нагрузка вручную, кПа</label><input type="number" id="a_snowMan" data-f placeholder="по району" step="any" inputmode="decimal"><div class="hint">Если задать — снеговой район не учитывается</div></div>
-    </div>
-    <h3 class="sub3">Грунт</h3>
-    <div class="grid">
-      <div><label class="f">Данные о грунте</label><select id="a_soilData" data-f><option value="">Как в расчёте по умолчанию</option><option value="нет геологии">Нет геологии</option><option value="основные данные">Основные данные</option><option value="ИГИ">Инженерно-геологические изыскания</option></select></div>
-      <div><label class="f">Тип грунта</label><select id="a_soilType" data-f><option value="">Как в расчёте по умолчанию</option><option value="не знаю">Не знаю</option><option value="скальный">Скальный</option><option value="крупнообломочный">Крупнообломочный</option><option value="песок крупный">Песок крупный</option><option value="песок средний">Песок средний</option><option value="песок мелкий">Песок мелкий</option><option value="песок пылеватый">Песок пылеватый</option><option value="супесь">Супесь</option><option value="суглинок">Суглинок</option><option value="глина">Глина</option><option value="насыпной">Насыпной</option><option value="торф">Торф</option></select><div class="hint">Учитывается, если есть данные о грунте</div></div>
-      <div><label class="f">Состояние грунта</label><select id="a_soilState" data-f><option value="">Как в расчёте по умолчанию</option><option value="неизвестно">Неизвестно</option><option value="плотный">Плотный</option><option value="средней плотности">Средней плотности</option><option value="рыхлый">Рыхлый</option></select></div>
-      <div><label class="f">Уровень грунтовых вод</label><select id="a_water" data-f><option value="">Как в расчёте по умолчанию</option><option value="неизвестно">Неизвестно</option><option value="ниже 5 м">Ниже 5 м</option><option value="3–5 м">3–5 м</option><option value="1–3 м">1–3 м</option><option value="менее 1 м">Менее 1 м</option></select></div>
-      <div><label class="f">Расчётное сопротивление R, кПа</label><input type="number" id="a_soilR" data-f placeholder="по таблице" step="any" inputmode="decimal"><div class="hint">Из изысканий</div></div>
-      <div><label class="f">Глубина промерзания, м</label><input type="number" id="a_frost" data-f placeholder="1,4" step="any" inputmode="decimal"></div>
-      <div><label class="f">Глубина несущего слоя для свай, м</label><input type="number" id="a_bearing" data-f placeholder="6" step="any" inputmode="decimal"></div>
-    </div>
-  </details>
   </div>
 
   <!-- ===== ПАНЕЛИ ===== -->

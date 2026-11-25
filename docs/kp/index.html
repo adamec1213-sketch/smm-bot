@@ -433,7 +433,6 @@ input.bad{border-color:var(--err)}
     <div class="hint" id="a_area_hint">Ширина (пролёт) 12–36 м, высота до карниза 4–14 м</div>
     <div class="grid" style="margin-top:16px">
       <div><label class="f">Назначение</label><select id="a_use"><option>Склад</option><option>Производство / цех</option><option>Автосервис</option><option>Торговый объект</option><option>Сельское хозяйство</option><option>Другое</option></select></div>
-      <div><label class="f">Снеговой район</label><select id="a_snowReg" data-f><option value="I">I</option><option value="II">II</option><option value="III" selected>III — Москва, Санкт-Петербург</option><option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option><option value="VII">VII</option><option value="VIII">VIII</option></select><div class="hint">Москва и СПб с областями — III. Другие города — по карте СП 20.13330</div></div>
     </div>
   </section>
 
@@ -450,13 +449,22 @@ input.bad{border-color:var(--err)}
 
   <section class="card">
     <h2>Фундамент и пол</h2>
-    <div><label class="f">Фундамент</label><div class="seg"><label><input type="radio" name="a_fund" value="винтовые сваи" checked><span>Винтовые сваи</span></label><label><input type="radio" name="a_fund" value="монолит"><span>Монолит</span></label></div></div>
+    <div><label class="f">Фундамент</label><div class="seg"><label><input type="radio" name="a_fund" value="монолит" checked><span>Монолитный</span></label><label><input type="radio" name="a_fund" value="винтовые сваи"><span>Винтовые сваи</span></label></div></div>
     <div class="grid" style="margin-top:16px">
       <div id="a_piles_box"><label class="f">Свай под одну колонну, шт</label><input type="number" id="a_piles" data-f placeholder="2" step="1" inputmode="decimal" value="2"></div>
     </div>
     <div style="margin-top:16px"><div><label class="f">Пол</label><div class="seg"><label><input type="radio" name="a_floor" value="монолитная плита" checked><span>Бетонный</span></label><label><input type="radio" name="a_floor" value="плиты ПАГ"><span>Плиты ПАГ</span></label><label><input type="radio" name="a_floor" value="нет"><span>Не нужен</span></label></div></div></div>
-    <div class="grid" style="margin-top:16px">
-      <div id="a_load_box"><label class="f">Нагрузка на пол, т/м²</label><input type="number" id="a_floorLoad" data-f placeholder="1" step="0.5" inputmode="decimal" value="1"><div class="hint">Обычный склад — 1, стеллажи и погрузчики — 3, тяжёлое производство — 5</div></div>
+    <div id="a_slab_box">
+      <div style="margin-top:16px"><label class="f">Толщина бетонной плиты, мм</label><div class="seg">
+        <label><input type="radio" name="a_slabT" value="180" checked><span>180</span></label>
+        <label><input type="radio" name="a_slabT" value="200"><span>200</span></label>
+        <label><input type="radio" name="a_slabT" value="250"><span>250</span></label>
+        <label><input type="radio" name="a_slabT" value="300"><span>300</span></label>
+      </div><div class="hint">Песчаная и щебёночная подушка входит в цену плиты.</div></div>
+      <div style="margin-top:16px"><label class="f">Утепление под плитой (ПЕНОПЛЭКС 50 мм)</label><div class="seg">
+        <label><input type="radio" name="a_xps" value="да" checked><span>Нужно</span></label>
+        <label><input type="radio" name="a_xps" value="нет"><span>Не нужно</span></label>
+      </div><div class="hint">Для тёплого склада: пол не промерзает.</div></div>
     </div>
   </section>
 
@@ -467,38 +475,12 @@ input.bad{border-color:var(--err)}
       <div><label class="f">Окна, м²</label><input type="number" id="a_win" value="0" min="0" max="2000" inputmode="numeric"></div>
       <div><label class="f">Двери, шт</label><input type="number" id="a_doors" value="1" min="0" max="30" inputmode="numeric"></div>
     </div>
-    <div class="hint">Ворота секционные 3×3,5 м с автоматикой</div>
+    <div class="hint">Ворота секционные 2 × 2,5 м. Другие размеры — уточним при звонке.</div>
     <div style="margin-top:16px"><div><label class="f">Фасонные элементы (уголки, нащельники, отливы)</label><div class="seg"><label><input type="radio" name="a_flash" value="да" checked><span>Нужны</span></label><label><input type="radio" name="a_flash" value="нет"><span>Не нужны</span></label></div></div></div>
     <div style="margin-top:16px"><div><label class="f">Водосток и снегозадержатели</label><div class="seg"><label><input type="radio" name="a_gutter" value="да" checked><span>Нужны</span></label><label><input type="radio" name="a_gutter" value="нет"><span>Не нужны</span></label></div></div></div>
     <div style="margin-top:16px"><div><label class="f">Доставка металла и панелей</label><div class="seg"><label><input type="radio" name="a_delivery" value="да" checked><span>Нужна</span></label><label><input type="radio" name="a_delivery" value="нет"><span>Не нужна</span></label></div></div></div>
   </section>
 
-  <details class="card more">
-    <summary><h2 style="margin:0">Для инженеров <small>необязательно</small></h2></summary>
-    <p class="hint" style="margin:10px 0 16px">Если не знаете — оставьте «как в расчёте по умолчанию», инженер уточнит при звонке.</p>
-    <h3 class="sub3">Каркас</h3>
-    <div class="grid">
-      <div><label class="f">Схема каркаса</label><select id="a_scheme" data-f><option value="">Как в расчёте по умолчанию</option><option value="КП (фермы)">Рамы с фермами</option><option value="П³ (балки)">Рамы из балок</option></select></div>
-      <div><label class="f">Марка стали</label><select id="a_steel" data-f><option value="">Как в расчёте по умолчанию</option><option value="С255">С255</option><option value="С355">С355</option></select></div>
-      <div><label class="f">Шаг рам, м</label><input type="number" id="a_step" data-f placeholder="6" step="any" inputmode="decimal"></div>
-      <div><label class="f">Уклон кровли, °</label><input type="number" id="a_slope" data-f placeholder="5,71 (10 %)" step="any" inputmode="decimal"></div>
-      <div><label class="f">Фахверковые колонны на торцах</label><select id="a_fachwerk" data-f><option value="">Как в расчёте по умолчанию</option><option value="да">Да</option><option value="нет">Нет</option></select></div>
-      <div><label class="f">Раскладка стеновых панелей</label><select id="a_layout" data-f><option value="">Как в расчёте по умолчанию</option><option value="вертикальная">Вертикальная</option><option value="горизонтальная">Горизонтальная</option></select></div>
-      <div><label class="f">Свес кровли по торцам, м</label><input type="number" id="a_ovhEnd" data-f placeholder="авто" step="any" inputmode="decimal"></div>
-      <div><label class="f">Свес кровли по карнизу, м</label><input type="number" id="a_ovhEave" data-f placeholder="авто" step="any" inputmode="decimal"></div>
-      <div><label class="f">Снеговая нагрузка вручную, кПа</label><input type="number" id="a_snowMan" data-f placeholder="по району" step="any" inputmode="decimal"><div class="hint">Если задать — снеговой район не учитывается</div></div>
-    </div>
-    <h3 class="sub3">Грунт</h3>
-    <div class="grid">
-      <div><label class="f">Данные о грунте</label><select id="a_soilData" data-f><option value="">Как в расчёте по умолчанию</option><option value="нет геологии">Нет геологии</option><option value="основные данные">Основные данные</option><option value="ИГИ">Инженерно-геологические изыскания</option></select></div>
-      <div><label class="f">Тип грунта</label><select id="a_soilType" data-f><option value="">Как в расчёте по умолчанию</option><option value="не знаю">Не знаю</option><option value="скальный">Скальный</option><option value="крупнообломочный">Крупнообломочный</option><option value="песок крупный">Песок крупный</option><option value="песок средний">Песок средний</option><option value="песок мелкий">Песок мелкий</option><option value="песок пылеватый">Песок пылеватый</option><option value="супесь">Супесь</option><option value="суглинок">Суглинок</option><option value="глина">Глина</option><option value="насыпной">Насыпной</option><option value="торф">Торф</option></select><div class="hint">Учитывается, если есть данные о грунте</div></div>
-      <div><label class="f">Состояние грунта</label><select id="a_soilState" data-f><option value="">Как в расчёте по умолчанию</option><option value="неизвестно">Неизвестно</option><option value="плотный">Плотный</option><option value="средней плотности">Средней плотности</option><option value="рыхлый">Рыхлый</option></select></div>
-      <div><label class="f">Уровень грунтовых вод</label><select id="a_water" data-f><option value="">Как в расчёте по умолчанию</option><option value="неизвестно">Неизвестно</option><option value="ниже 5 м">Ниже 5 м</option><option value="3–5 м">3–5 м</option><option value="1–3 м">1–3 м</option><option value="менее 1 м">Менее 1 м</option></select></div>
-      <div><label class="f">Расчётное сопротивление R, кПа</label><input type="number" id="a_soilR" data-f placeholder="по таблице" step="any" inputmode="decimal"><div class="hint">Из изысканий</div></div>
-      <div><label class="f">Глубина промерзания, м</label><input type="number" id="a_frost" data-f placeholder="1,4" step="any" inputmode="decimal"></div>
-      <div><label class="f">Глубина несущего слоя для свай, м</label><input type="number" id="a_bearing" data-f placeholder="6" step="any" inputmode="decimal"></div>
-    </div>
-  </details>
   </div>
 
   <!-- ===== ПАНЕЛИ ===== -->
@@ -918,6 +900,8 @@ function renderDeck(r, client, no, days, C) {
   const ang = r.kind === 'Ангар под ключ', g = ang ? geom(r) : null, f = r.facts || {}, v = r.input || {};
   const vat = (r.params.find(p => p[0] === 'НДС') || [0, ''])[1];
   const vatSum = r.vatTotal || 0;
+  const withVat = vat === '22 %' || vat === '5 %';
+  const vl = withVat ? 'с НДС ' + vat : 'без НДС', VL = vl.toUpperCase();
   const d0 = new Date(), until = new Date(d0.getTime() + days * 864e5), ds = x => x.toLocaleDateString('ru-RU');
   const title = ang ? 'Ангар ' + nf(g.L, 1) + ' × ' + nf(g.W, 1) + ' м' : r.kind;
   const sub = ang ? (v.use || 'Склад') + (client.city ? ' · ' + client.city : '') : (client.city || '');
@@ -950,8 +934,8 @@ function renderDeck(r, client, no, days, C) {
     f.slabV ? [nf(f.slabV, 1) + ' м³', 'бетона в плите пола ' + nf(f.slabT) + ' мм'] : f.piles ? [nf(f.piles) + ' шт', 'винтовых свай под колонны'] : f.footings ? [nf(f.footings) + ' шт', 'монолитных фундаментов под колонны'] : null,
     f.wallM2 ? [nf(f.wallM2) + ' м²', 'стеновых сэндвич-панелей; кровля ' + nf(f.roofM2 || 0) + ' м²'] : null
   ].filter(Boolean) : r.params.slice(0, 4).map(p => [p[1], p[0]]);
-  S.push(head('Предложение в цифрах') + '<div class="d-kpis"><div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' +
-    '<div class="dark"><small>ИТОГО С НДС ' + esc(vat) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
+  S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
+    '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
     (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
     '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
     '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК «Поколения» по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
@@ -1014,7 +998,7 @@ function renderDeck(r, client, no, days, C) {
     const max = gr.reduce((m, y) => Math.max(m, y.sum), 0);
     return '<div class="' + (x.sum === max ? 'dark' : '') + '"><small>' + esc(x.name.toUpperCase()) + '</small><b>' + rub(x.sum) + ' <em>' + pct(x.sum, tot) + '</em></b><ul>' +
       top.map(t => '<li>' + esc(t[0].replace(/\s*\(.*?\)\s*/g, ' ').trim()) + ': ' + rub(t[4]) + '</li>').join('') + '</ul></div>';
-  }).join('') + '</div><div class="d-total"><span>Итого с НДС ' + esc(vat) + '</span><b>' + rub(r.total) + '</b><span>в том числе НДС: <b>' + rub(vatSum) + '</b></span></div>');
+  }).join('') + '</div><div class="d-total"><span>Итого ' + esc(vl) + '</span><b>' + rub(r.total) + '</b>' + (withVat ? '<span>в том числе НДС: <b>' + rub(vatSum) + '</b></span>' : '') + '</div>');
 
   // Стоимость по разделам (таблицы по ~13 строк)
   const rows = []; let n = 0;
@@ -1022,10 +1006,10 @@ function renderDeck(r, client, no, days, C) {
   const per = 15, pages = Math.max(1, Math.ceil(rows.length / per));
   for (let p = 0; p < pages; p++) {
     const part = rows.slice(p * per, (p + 1) * per), last = p === pages - 1;
-    S.push(head('Стоимость по разделам' + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена с НДС, ₽</th><th class="n">Сумма с НДС, ₽</th></tr></thead><tbody>' +
+    S.push(head('Стоимость по разделам' + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена' + (withVat ? ' с НДС' : '') + ', ₽</th><th class="n">Сумма' + (withVat ? ' с НДС' : '') + ', ₽</th></tr></thead><tbody>' +
       part.map(x => x.h ? '<tr class="grp"><td></td><td>' + esc(x.h.toUpperCase()) + '</td><td></td><td></td><td class="n">' + nf(Math.round(x.sum)) + '</td></tr>'
         : '<tr><td>' + x.n + '</td><td>' + esc(x.it[0]) + '</td><td class="n">' + nf(x.it[1], x.it[1] % 1 ? 1 : 0) + ' ' + esc(x.it[2]) + '</td><td class="n">' + nf(x.it[3], 2) + '</td><td class="n">' + nf(Math.round(x.it[4])) + '</td></tr>').join('') +
-      '</tbody>' + (last ? '<tfoot><tr class="vat"><td></td><td>В том числе НДС ' + esc(vat) + '</td><td></td><td></td><td class="n">' + nf(Math.round(vatSum)) + '</td></tr><tr><td></td><td>Итого с НДС ' + esc(vat) + '</td><td></td><td class="n">' + (ang ? nf(Math.round(r.total / g.L / g.W)) + ' за м²' : '') + '</td><td class="n">' + nf(Math.round(r.total)) + '</td></tr></tfoot>' : '') +
+      '</tbody>' + (last ? '<tfoot>' + (withVat ? '<tr class="vat"><td></td><td>В том числе НДС ' + esc(vat) + '</td><td></td><td></td><td class="n">' + nf(Math.round(vatSum)) + '</td></tr>' : '') + '<tr><td></td><td>Итого ' + esc(vl) + '</td><td></td><td class="n">' + (ang ? nf(Math.round(r.total / g.L / g.W)) + ' за м²' : '') + '</td><td class="n">' + nf(Math.round(r.total)) + '</td></tr></tfoot>' : '') +
       '</table>' + (last && r.notes.length ? '<p class="d-note">' + r.notes.map(esc).join(' ') + '</p>' : ''));
   }
 
@@ -1060,7 +1044,7 @@ function renderDeck(r, client, no, days, C) {
   // Финал
   S.push(head('Строим так, чтобы ваш бизнес', 'начал зарабатывать раньше') + '<div class="d-final"><div class="d-cond"><h3>УСЛОВИЯ</h3><ul>' +
     '<li>Расчёт предварительный: сделан автоматически по введённым параметрам, уточняется после ТЗ, геологии и чертежей КМД.</li>' +
-    '<li>Все цены с НДС ' + esc(vat) + ': итог <b>' + rub(r.total) + '</b>, в том числе НДС ' + rub(vatSum) + '.</li>' +
+    (withVat ? '<li>Все цены с НДС ' + esc(vat) + ': итог <b>' + rub(r.total) + '</b>, в том числе НДС ' + rub(vatSum) + '.</li>' : '<li>Все цены без НДС: итог <b>' + rub(r.total) + '</b>.</li>') +
     (r.days ? '<li>Монтаж каркаса, стен и кровли — около ' + nf(r.days) + ' дней; полы и отделка — по графику после договора.</li>' : '') +
     '<li>КП № ' + esc(no) + ' действует до ' + ds(until) + '. Оплату и сроки согласуем в договоре.</li></ul></div>' +
     '<div class="d-cards"><div class="dark"><b>РСК «ПОКОЛЕНИЯ»</b><span>Строительная компания</span><em>' + esc(C.phone) + '</em><em>' + esc(C.email) + '</em></div>' +
@@ -1127,7 +1111,7 @@ function hints(){
   const L = num('a_len'), W = num('a_wid');
   $('a_area_hint').textContent = (L && W ? 'Площадь: ' + fmt(L*W) + ' м² · ' : '') + 'ширина (пролёт) 12–36 м, высота до карниза 4–14 м';
   panelOpts();
-  $('a_load_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
+  $('a_slab_box').classList.toggle('hidden', radio('a_floor') !== 'монолитная плита');
   $('a_piles_box').classList.toggle('hidden', radio('a_fund') !== 'винтовые сваи');
 }
 document.querySelectorAll('#form input, #form select').forEach(e => e.addEventListener('change', hints));
@@ -1137,15 +1121,13 @@ $('pol_link').addEventListener('click', e => { e.preventDefault(); $('policy').c
 
 function params(){
   if (tab === 'angar') {
-    const p = { L: num('a_len'), W: num('a_wid'), H: num('a_h'), use: $('a_use').value, snowReg: $('a_snowReg').value,
+    const p = { L: num('a_len'), W: num('a_wid'), H: num('a_h'), use: $('a_use').value,
       wallThk: $('a_wallThk').value, roofThk: $('a_roofThk').value, wallCore: $('a_core').value, roofCore: $('a_core').value, ral: $('a_ral').value,
       fund: radio('a_fund'), floor: radio('a_floor'),
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
       flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
-    if (p.floor === 'монолитная плита' && $('a_floorLoad').value) p.floorLoad = num('a_floorLoad');
-    // «Для инженеров»: отправляем только то, что клиент заполнил, остальное — как в таблице
-    document.querySelectorAll('.more [data-f]').forEach(e => { if (e.value !== '') p[e.id.slice(2)] = e.value.replace(',', '.'); });
+    if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = radio('a_xps'); }
     return p;
   }
   if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,
