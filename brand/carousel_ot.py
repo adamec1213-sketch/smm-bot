@@ -7,7 +7,7 @@ g={'__file__':ROOT+'/brand/carousel_kapital_v2.py'}; exec(compile(src,'v2','exec
 F,W,H,GOLD,WHT,TXT,GRY,X0,BG1=[g[k] for k in 'F W H GOLD WHT TXT GRY X0 BG1'.split()]
 background,footer,rich=g['background'],g['footer'],g['rich']
 OUT=ROOT+'/drafts/carousel_ot/'; os.makedirs(OUT,exist_ok=True)
-RED=(196,92,72)
+RED=g['CRANE']; THEME=g['THEME']
 
 def head(d,eyebrow,lines,size=80):
     d.text((X0,96),eyebrow,font=F(26,'700'),fill=GOLD); y=150

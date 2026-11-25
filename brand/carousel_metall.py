@@ -13,7 +13,7 @@ def cover():
     hang=Image.open(ROOT+'/brand/source/angar.jpg').convert('RGB').crop((0,0,1024,740))
     fg=hang.resize((W,int(hang.height*W/hang.width)),Image.LANCZOS); fg=ImageEnhance.Brightness(fg).enhance(0.75)
     m=Image.new('L',fg.size,0); md=ImageDraw.Draw(m)
-    for y in range(fg.height): md.line([(0,y),(W,y)],fill=int(255*max(0,min(1,(fg.height-y)/260))*min(1,y/120+0.3)))
+    for y in range(fg.height): md.line([(0,y),(W,y)],fill=int(255*max(0,min(1,(fg.height-y-60)/380))*min(1,y/180)))
     im.paste(fg,(0,560),m); d=ImageDraw.Draw(im)
     d.text((X0,96),'М Е Т А Л Л',font=F(26,'700'),fill=GOLD); y=150
     for t,c in [('28 тонн',WHT),('или 84?',GOLD)]:
@@ -22,7 +22,7 @@ def cover():
     footer(im,1); return im
 
 def card(d,y,title,lines,big,unit,col):
-    d.rounded_rectangle([X0,y,W-X0,y+300],radius=30,fill=(18,18,21),outline=(80,68,46),width=2)
+    d.rounded_rectangle([X0,y,W-X0,y+300],radius=30,fill=((255,255,255) if g['THEME']=='light' else (18,18,21)),outline=((226,214,192) if g['THEME']=='light' else (80,68,46)),width=2)
     d.text((X0+44,y+34),title,font=F(40),fill=col)
     rich(d,X0+44,y+96,lines,32,560)
     d.text((W-X0-330,y+120),big,font=F(110),fill=col); w=d.textlength(big,font=F(110))
@@ -41,11 +41,11 @@ def factor(n,eyebrow,title,lines,tip):
     im=background(); d=ImageDraw.Draw(im)
     y=head(d,eyebrow,title,96)
     y=rich(d,X0,y+30,lines,44,W-2*X0)+60
-    d.rounded_rectangle([X0,y,W-X0,y+230],radius=28,fill=(18,18,21),outline=(80,68,46),width=2)
+    d.rounded_rectangle([X0,y,W-X0,y+230],radius=28,fill=((255,255,255) if g['THEME']=='light' else (18,18,21)),outline=((226,214,192) if g['THEME']=='light' else (80,68,46)),width=2)
     d.text((X0+44,y+34),'НА ПРАКТИКЕ',font=F(28,'700'),fill=GOLD)
     rich(d,X0+44,y+84,tip,36,W-2*X0-88)
     num=str(n-2); f=F(520); w=d.textlength(num,font=f)
-    d.text((W-X0-w,H-640),num,font=f,fill=(58,50,36))
+    d.text((W-X0-w,H-640),num,font=f,fill=((236,227,210) if g['THEME']=='light' else (58,50,36)))
     d.text((X0,H-300),'ф а к т о р   '+num+'   и з   4',font=F(28,'700'),fill=GRY)
     footer(im,n); return im
 

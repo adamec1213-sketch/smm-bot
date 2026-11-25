@@ -6,14 +6,14 @@ src=open(ROOT+'/brand/carousel_ot.py').read().split('\nshutil.copy(')[0].split('
 g={'__file__':ROOT+'/brand/carousel_ot.py'}; exec(compile(src,'ot','exec'),g)
 F,W,H,GOLD,WHT,TXT,GRY,X0,BG1,RED=[g[k] for k in 'F W H GOLD WHT TXT GRY X0 BG1 RED'.split()]
 background,footer,rich,head,mark,bullets=[g[k] for k in 'background footer rich head mark bullets'.split()]
-BOX=(18,18,21); EDGE=(80,68,46)
+BOX=((255,255,255) if g['THEME']=='light' else (18,18,21)); EDGE=((226,214,192) if g['THEME']=='light' else (80,68,46))
 
 def cover(eyebrow,lines,sub,size=96):
     im=background()
     hang=Image.open(ROOT+'/brand/source/angar.jpg').convert('RGB').crop((0,0,1024,740))
     fg=hang.resize((W,int(hang.height*W/hang.width)),Image.LANCZOS); fg=ImageEnhance.Brightness(fg).enhance(0.75)
     m=Image.new('L',fg.size,0); md=ImageDraw.Draw(m)
-    for y in range(fg.height): md.line([(0,y),(W,y)],fill=int(255*max(0,min(1,(fg.height-y)/260))*min(1,y/120+0.3)))
+    for y in range(fg.height): md.line([(0,y),(W,y)],fill=int(255*max(0,min(1,(fg.height-y-60)/380))*min(1,y/180)))
     im.paste(fg,(0,560),m); d=ImageDraw.Draw(im)
     d.text((X0,96),eyebrow,font=F(26,'700'),fill=GOLD); y=150
     for t,c in lines:
@@ -24,7 +24,7 @@ def cover(eyebrow,lines,sub,size=96):
 def checks(n,eyebrow,title,intro,items,tip=None,ts=90,num=None):
     im=background(); d=ImageDraw.Draw(im)
     if num:
-        f=F(520); w=d.textlength(num,font=f); d.text((W-X0-w,H-600),num,font=f,fill=(48,42,31))
+        f=F(520); w=d.textlength(num,font=f); d.text((W-X0-w,H-600),num,font=f,fill=((236,227,210) if g['THEME']=='light' else (48,42,31)))
     y=head(d,eyebrow,title,ts)
     if intro: y=rich(d,X0,y+30,intro,44,W-2*X0)+30
     y+=20

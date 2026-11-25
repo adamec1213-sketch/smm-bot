@@ -7,14 +7,14 @@ g={'__file__':ROOT+'/brand/carousel_ot.py'}; exec(compile(src,'ot','exec'),g)
 F,W,H,GOLD,WHT,TXT,GRY,X0,BG1,RED=[g[k] for k in 'F W H GOLD WHT TXT GRY X0 BG1 RED'.split()]
 background,footer,rich,head,mark,bullets=[g[k] for k in 'background footer rich head mark bullets'.split()]
 OUT=ROOT+'/drafts/carousel_sneg/'; os.makedirs(OUT,exist_ok=True)
-BLUE=(150,185,215)
+BLUE=((64,96,126) if g['THEME']=='light' else (150,185,215))
 
 def cover():
     im=background()
     hang=Image.open(ROOT+'/brand/source/angar.jpg').convert('RGB').crop((0,0,1024,740))
     fg=hang.resize((W,int(hang.height*W/hang.width)),Image.LANCZOS); fg=ImageEnhance.Brightness(fg).enhance(0.75)
     m=Image.new('L',fg.size,0); md=ImageDraw.Draw(m)
-    for y in range(fg.height): md.line([(0,y),(W,y)],fill=int(255*max(0,min(1,(fg.height-y)/260))*min(1,y/120+0.3)))
+    for y in range(fg.height): md.line([(0,y),(W,y)],fill=int(255*max(0,min(1,(fg.height-y-60)/380))*min(1,y/180)))
     im.paste(fg,(0,560),m); d=ImageDraw.Draw(im)
     d.text((X0,96),'С Н Е Г',font=F(26,'700'),fill=GOLD); y=150
     for t,c in [('216 тонн',WHT),('на крыше',GOLD)]:
@@ -26,7 +26,7 @@ def s2():
     im=background(); d=ImageDraw.Draw(im)
     y=head(d,'О Т К У Д А   Ц И Ф Р А',[('Склад',WHT),('60 × 24 м',GOLD)],96)+30
     for lab,val in [('Площадь кровли','1 440 м²'),('Расчётный снег для Москвы и СПб','150 кг/м²'),('Расчётный снег на всей кровле','216 т')]:
-        d.rounded_rectangle([X0,y,W-X0,y+170],radius=28,fill=(18,18,21),outline=(80,68,46),width=2)
+        d.rounded_rectangle([X0,y,W-X0,y+170],radius=28,fill=((255,255,255) if g['THEME']=='light' else (18,18,21)),outline=((226,214,192) if g['THEME']=='light' else (80,68,46)),width=2)
         rich(d,X0+44,y+30,[(lab,0)],34,W-2*X0-88)
         d.text((X0+44,y+82),val,font=F(64),fill=GOLD if '216' in val else WHT); y+=195
     rich(d,X0,y+10,[('Каркас обязан держать этот вес',0),('с запасом,',1),('каждую зиму.',0)],42,W-2*X0)
@@ -39,7 +39,7 @@ def s3():
     d.text((X0,y),'Район',font=F(32,'700'),fill=GRY); d.text((X0+300,y),'Вес снега, кг/м² *',font=F(32,'700'),fill=GRY); y+=62
     for r,v in rows:
         hl=r=='III'
-        if hl: d.rounded_rectangle([X0-20,y-14,W-X0+20,y+66],radius=18,fill=(40,34,22))
+        if hl: d.rounded_rectangle([X0-20,y-14,W-X0+20,y+66],radius=18,fill=((242,231,208) if g['THEME']=='light' else (40,34,22)))
         d.text((X0,y),r,font=F(46),fill=GOLD if hl else WHT); d.text((X0+300,y),v,font=F(46),fill=GOLD if hl else TXT)
         if hl: d.text((X0+520,y+8),'Москва, СПб',font=F(34,'700'),fill=GOLD)
         y+=84
@@ -51,7 +51,7 @@ def card(n,eyebrow,title,lines,tip):
     y=head(d,eyebrow,title,90)
     y=rich(d,X0,y+30,lines,44,W-2*X0)+60
     if tip:
-        d.rounded_rectangle([X0,y,W-X0,y+230],radius=28,fill=(18,18,21),outline=(80,68,46),width=2)
+        d.rounded_rectangle([X0,y,W-X0,y+230],radius=28,fill=((255,255,255) if g['THEME']=='light' else (18,18,21)),outline=((226,214,192) if g['THEME']=='light' else (80,68,46)),width=2)
         d.text((X0+44,y+34),'НА ПРАКТИКЕ',font=F(28,'700'),fill=GOLD)
         rich(d,X0+44,y+84,tip,36,W-2*X0-88)
     footer(im,n); return im

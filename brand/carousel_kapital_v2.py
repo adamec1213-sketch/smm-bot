@@ -10,11 +10,24 @@ OUT = ROOT + '/drafts/carousel_kapital_v2/'
 os.makedirs(OUT, exist_ok=True)
 
 W, H = 1080, 1350
-GOLD = (217, 176, 94)
-WHT = (244, 240, 232)
-TXT = (200, 195, 186)
-GRY = (120, 118, 114)
-BG1, BG2 = (12, 13, 16), (24, 24, 28)
+# Тема: 'light' — «РСК Групп» (с 25.11.2026, светлый фон как на логотипе); 'dark' — старый стиль «Поколения».
+THEME = os.environ.get('BRAND_THEME', 'light')
+if THEME == 'light':
+    GOLD = (160, 116, 44)      # золото логотипа
+    WHT = (33, 31, 36)         # основной (жирный) текст — графит логотипа
+    TXT = (84, 80, 76)
+    GRY = (138, 131, 122)
+    BG1, BG2 = (247, 244, 239), (238, 233, 224)
+    RING1, RING2 = (226, 214, 192), (230, 220, 202)
+    CRANE = (128, 32, 40)      # бордовый крана
+else:
+    GOLD = (217, 176, 94)
+    WHT = (244, 240, 232)
+    TXT = (200, 195, 186)
+    GRY = (120, 118, 114)
+    BG1, BG2 = (12, 13, 16), (24, 24, 28)
+    RING1, RING2 = (48, 44, 36), (40, 37, 31)
+    CRANE = (196, 92, 72)
 X0 = 64
 
 
@@ -27,6 +40,11 @@ _mark = logo.crop((180, 120, 1820, 1240))
 MARK = Image.new('RGBA', _mark.size, GOLD + (0,))
 MARK.putalpha(_mark.convert('L').point(lambda v: 255 if v > 90 else 0))
 
+# Новый логотип «РСК Групп»: горизонтальная плашка (ангар + кран + надпись), кремовый фон -> прозрачный.
+_ln = Image.open(ROOT + '/brand/logo-rsk-grupp.jpg').convert('RGB').crop((44, 206, 600, 432))
+LOGO_NEW = _ln.convert('RGBA')
+LOGO_NEW.putalpha(Image.eval(ImageOps.invert(_ln.convert('L')), lambda v: min(255, max(0, (v - 6) * 6))))
+
 
 def background():
     im = Image.new('RGBA', (W, H))
@@ -34,8 +52,8 @@ def background():
     for y in range(H):
         k = y / H
         d.line([(0, y), (W, y)], fill=tuple(int(BG1[i] * (1 - k) + BG2[i] * k) for i in range(3)))
-    d.ellipse([740, -260, 1340, 340], outline=(48, 44, 36), width=3)
-    d.ellipse([-260, 1090, 240, 1590], outline=(40, 37, 31), width=3)
+    d.ellipse([740, -260, 1340, 340], outline=RING1, width=3)
+    d.ellipse([-260, 1090, 240, 1590], outline=RING2, width=3)
     return im
 
 
@@ -82,11 +100,15 @@ def rich(d, x, y, segs, size, maxw, lh=1.32):
 def footer(im, n, last=False):
     d = ImageDraw.Draw(im)
     d.text((X0, H - 92), f'{n}/8', font=F(28, '700'), fill=GRY)
-    m = MARK.resize((56, int(56 * MARK.height / MARK.width)), Image.LANCZOS)
-    tw = d.textlength('ПОКОЛЕНИЯ', font=F(24, '700'))
-    x = (W - (56 + 14 + tw)) / 2
-    im.alpha_composite(m, (int(x), H - 104))
-    d.text((x + 70, H - 90), 'ПОКОЛЕНИЯ', font=F(24, '700'), fill=GOLD)
+    if THEME == 'light':
+        lg = LOGO_NEW.resize((int(84 * LOGO_NEW.width / LOGO_NEW.height), 84), Image.LANCZOS)
+        im.alpha_composite(lg, (int((W - lg.width) / 2), H - 124))
+    else:
+        m = MARK.resize((56, int(56 * MARK.height / MARK.width)), Image.LANCZOS)
+        tw = d.textlength('ПОКОЛЕНИЯ', font=F(24, '700'))
+        x = (W - (56 + 14 + tw)) / 2
+        im.alpha_composite(m, (int(x), H - 104))
+        d.text((x + 70, H - 90), 'ПОКОЛЕНИЯ', font=F(24, '700'), fill=GOLD)
     if last:
         pass
     else:
