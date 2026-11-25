@@ -65,7 +65,7 @@ function params(){
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
       flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
-    if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = radio('a_xps'); }
+    if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); }
     return p;
   }
   if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,

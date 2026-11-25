@@ -461,10 +461,6 @@ input.bad{border-color:var(--err)}
         <label><input type="radio" name="a_slabT" value="250"><span>250</span></label>
         <label><input type="radio" name="a_slabT" value="300"><span>300</span></label>
       </div><div class="hint">Песчаная и щебёночная подушка входит в цену плиты.</div></div>
-      <div style="margin-top:16px"><label class="f">Утепление под плитой (ПЕНОПЛЭКС 50 мм)</label><div class="seg">
-        <label><input type="radio" name="a_xps" value="да" checked><span>Нужно</span></label>
-        <label><input type="radio" name="a_xps" value="нет"><span>Не нужно</span></label>
-      </div><div class="hint">Для тёплого склада: пол не промерзает.</div></div>
     </div>
   </section>
 
@@ -1127,7 +1123,7 @@ function params(){
       gates: num('a_gates'), windows: num('a_win'), doors: num('a_doors'),
       flash: radio('a_flash'), gutter: radio('a_gutter'), delivery: radio('a_delivery'), vat: radio('vat') };
     if (p.fund === 'винтовые сваи' && $('a_piles').value) p.piles = num('a_piles');
-    if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = radio('a_xps'); }
+    if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); }
     return p;
   }
   if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,
