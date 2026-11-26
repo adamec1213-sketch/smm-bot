@@ -105,3 +105,11 @@ input.bad{border-color:var(--err)}
 .fail{background:#FBEDEA;border-color:#EDC2B9;color:#7A2418}
 .card h2{text-transform:none;letter-spacing:0;font-size:17px;color:var(--txt);font-weight:800}
 .calc h1 b{color:inherit}
+
+/* панели: стеновые + кровельные в одном КП */
+.pblock{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;background:var(--card2)}
+.pblock:has(.ptog input:checked){border-color:var(--gold);background:#FFFDF8}
+.ptog{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:800;font-size:16px}
+.ptog input{width:20px;height:20px;accent-color:var(--gold)}
+.pbody{margin-top:14px}
+.pblock:not(:has(.ptog input:checked)) .pbody{display:none}

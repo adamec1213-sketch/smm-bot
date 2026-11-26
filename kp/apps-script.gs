@@ -285,33 +285,53 @@ function panelPrice_(t, key, area, vat) {
   return { price: Math.round((b[0] + vol + t.add) * (vat === '22 %' ? 1 : 1 / 1.22) * 100) / 100, color: b[1] };
 }
 function calcPanel_(p) {
-  const roof = p.type === 'roof';
+  // Старый формат (один тип): {type, core, thk, width, area}. Новый: {wall:{...}, roof:{...}} — стеновые и кровельные в одном КП.
+  if (!p.wall && !p.roof) {
+    const one = { on: '1', core: p.core, thk: p.thk, width: p.width, area: p.area };
+    if (p.type === 'roof') p.roof = one; else p.wall = one;
+  }
   const pick = (k, x, d) => { const v = field_(k, x); return v === undefined ? d : v; };
-  const core = pick(roof ? 'roofCore' : 'wallCore', p.core, 'минвата');
-  const w = roof ? 1000 : pick('wallW', p.width, 1000);
-  const thk = pick(roof ? 'roofThk' : 'wallThk', p.thk, roof ? 150 : 100);
   const mTop = pick('mTop', p.mTop, 0.45), mBot = pick('mBot', p.mBot, 0.45), ral = pick('ral', p.ral, 7024);
-  const A = clamp_(num_(p.area), 10, 100000), mont = p.mont === '1', deliv = p.deliv === '1', vat = vat_(p);
-  const key = [roof ? 'кровля' : 'стена', core, w, thk, mTop, mBot, ral].join('|');
-  const pp = panelPrice_(panelTable_(), key, A, vat);
-  if (!pp) throw new Error('нет такой панели у поставщика: ' + key);
+  const mont = p.mont === '1', deliv = p.deliv === '1', vat = vat_(p);
+  const t = panelTable_();
+  const panels = [];
+  [['wall', 'Стеновые'], ['roof', 'Кровельные']].forEach(([k, name]) => {
+    const q = p[k];
+    if (!q || q.on === '0' || q.on === false) return;
+    const roof = k === 'roof';
+    const A = clamp_(num_(q.area), 0, 100000);
+    if (A < 10) return;
+    const core = pick(roof ? 'roofCore' : 'wallCore', q.core, 'минвата');
+    const w = roof ? 1000 : pick('wallW', q.width, 1000);
+    const thk = pick(roof ? 'roofThk' : 'wallThk', q.thk, roof ? 150 : 100);
+    const key = [roof ? 'кровля' : 'стена', core, w, thk, mTop, mBot, ral].join('|');
+    const pp = panelPrice_(t, key, A, vat);
+    if (!pp) throw new Error('нет такой панели у поставщика: ' + key);
+    panels.push({ kind: name, core: core, thk: thk, width: w, mTop: mTop, mBot: mBot, ral: ral, color: pp.color, area: A, price: pp.price });
+  });
+  if (!panels.length) throw new Error('не указана площадь панелей (от 10 м²)');
+  const total = panels.reduce((s, x) => s + x.area, 0);
   return withInputs_({ vat: vat }, (sh, rows) => {
     const sm = smeta_(); const k = 1 + markup_(sm);
     const perTruck = nextTo_('График', 'Помещается в одну фуру, м²', 250);
     const pr = n => num_((findRow_(sm, n) || {}).price) * k;
-    const items = [[(roof ? 'Кровельные' : 'Стеновые') + ' сэндвич-панели, ' + core + ' ' + thk + ' мм, RAL ' + ral, A, 'м²', pp.price * k]];
+    const items = panels.map(x => [x.kind + ' сэндвич-панели, ' + x.core + ' ' + x.thk + ' мм, RAL ' + x.ral, x.area, 'м²', x.price * k]);
+    panels.forEach(x => x.price = Math.round(x.price * k * 100) / 100);
     if (mont) {
-      items.push(['Монтаж сэндвич-панелей', A, 'м²', pr('Монтаж сэндвич-панелей')]);
-      items.push(['Расходники для монтажа (герметик, саморезы, лента)', A, 'м²', pr('Расходники')]);
+      items.push(['Монтаж сэндвич-панелей', total, 'м²', pr('Монтаж сэндвич-панелей')]);
+      items.push(['Расходники для монтажа (герметик, саморезы, лента)', total, 'м²', pr('Расходники')]);
     }
-    if (deliv) items.push(['Доставка сэндвич-панелей', Math.ceil(A / perTruck), 'рейс', pr('Доставка сэндвич-панелей')]);
+    const trips = deliv ? Math.ceil(total / perTruck) : 0;
+    if (deliv) items.push(['Доставка сэндвич-панелей', trips, 'рейс', pr('Доставка сэндвич-панелей')]);
     const mm = x => String(x).replace('.', ',') + ' мм';
+    const params = [];
+    panels.forEach(x => params.push([x.kind + ' панели', x.core + ', ' + x.thk + ' мм, ' + x.area + ' м²']));
+    params.push(['Металл снаружи / внутри', mm(mTop) + ' / ' + mm(mBot)], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
+      ['Площадь всего', total + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]);
     return finish_({
-      kind: 'Сэндвич-панели', area: 0, items: items,
-      title: (roof ? 'Кровельные' : 'Стеновые') + ' сэндвич-панели ' + core + ' ' + thk + ' мм — ' + A + ' м²',
-      params: [['Тип', roof ? 'кровельные' : 'стеновые'], ['Утеплитель', core], ['Толщина', thk + ' мм'], ['Ширина панели', w + ' мм'],
-        ['Металл снаружи / внутри', mm(mTop) + ' / ' + mm(mBot)], ['Цвет снаружи', 'RAL ' + ral + (pp.color ? ' (' + pp.color + ')' : '')],
-        ['Площадь', A + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]],
+      kind: 'Сэндвич-панели', area: 0, items: items, panels: panels, mont: mont, trips: trips, panelArea: total,
+      title: panels.map(x => x.kind.toLowerCase() + ' ' + x.thk + ' мм — ' + x.area + ' м²').join(', ').replace(/^./, c => c.toUpperCase()),
+      params: params,
       notes: ['Цена панелей — по прайсу поставщика с учётом объёма заказа. Цвет изнутри — RAL 9003.'], vatOf: [sh, rows],
       excluded: ['фасонные элементы — по спецификации', 'разгрузка на объекте']
     });

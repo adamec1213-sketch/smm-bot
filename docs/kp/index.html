@@ -125,6 +125,14 @@ input.bad{border-color:var(--err)}
 .card h2{text-transform:none;letter-spacing:0;font-size:17px;color:var(--txt);font-weight:800}
 .calc h1 b{color:inherit}
 
+/* панели: стеновые + кровельные в одном КП */
+.pblock{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;background:var(--card2)}
+.pblock:has(.ptog input:checked){border-color:var(--gold);background:#FFFDF8}
+.ptog{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:800;font-size:16px}
+.ptog input{width:20px;height:20px;accent-color:var(--gold)}
+.pbody{margin-top:14px}
+.pblock:not(:has(.ptog input:checked)) .pbody{display:none}
+
 /* ===== КП-презентация 16:9 (размеры в cqw: calc(1*var(--u)) = 1% ширины слайда) ===== */
 .deck{--u:1cqw;display:grid;gap:18px;--g:#C99A4B;--gd:#A0742C;--ink:#17150f;--mut:#6b665c;--bd:#ece5d6;--cream:#faf6ec}
 .slide{container-type:inline-size;position:relative;width:100%;aspect-ratio:16/9;background:#fff;color:var(--ink);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:Montserrat,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -411,6 +419,32 @@ input.bad{border-color:var(--err)}
 /* «РСК Групп»: логотип-плашка */
 .d-logo img.lk{width:auto;height:calc(3.4*var(--u))}
 .d-brand img.lk{width:auto;height:calc(4.2*var(--u))}
+
+/* КП на панели: «Ваш заказ» — карточки панелей + итог */
+.d-ord{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(1.6*var(--u));align-items:stretch}
+.d-pc{position:relative;border:1px solid var(--bd);border-radius:calc(1.2*var(--u));padding:calc(1.8*var(--u)) calc(1.8*var(--u)) calc(1.4*var(--u));background:#fff;display:flex;flex-direction:column;overflow:hidden;min-height:calc(35*var(--u))}
+.d-pc .sw{position:absolute;top:0;left:0;right:0;height:calc(.7*var(--u))}
+.d-pc small{font-size:calc(.85*var(--u));font-weight:800;color:var(--gd);letter-spacing:calc(.05*var(--u))}
+.d-pc .big{display:block;font-size:calc(3.4*var(--u));font-weight:800;line-height:1.1;margin:calc(.6*var(--u)) 0 calc(1.2*var(--u));white-space:nowrap}
+.d-pc dl{display:grid;grid-template-columns:auto 1fr;gap:calc(.8*var(--u)) calc(1.2*var(--u));margin:0 0 calc(1.2*var(--u));font-size:calc(1.15*var(--u))}
+.d-pc dt{color:var(--mut)}
+.d-pc dd{margin:0;font-weight:700;text-align:right}
+.d-pc .pr{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--bd);padding-top:calc(.8*var(--u));margin-top:auto;font-size:calc(1*var(--u))}
+.d-pc .pr+.pr{margin-top:calc(.6*var(--u))}
+.d-pc .pr span{color:var(--mut)}
+.d-pc .pr b{font-size:calc(1.4*var(--u))}
+.d-pc.ph{padding:0;border:0}
+.d-pc.ph img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.d-pc.dark{background:#211F24;border-color:#211F24;color:#fff}
+.d-pc.dark small{color:#e9dcc0}
+.d-pc.dark .big{color:var(--g)}
+.d-pc.dark dt{color:#b9b3a8}
+.d-pc.dark dd{color:#fff}
+/* смета + «входит / не входит» на одном слайде */
+.d-two.sm{margin-top:calc(1.6*var(--u))}
+.d-two.sm>div{min-height:0;padding:calc(1.2*var(--u)) calc(1.6*var(--u))}
+.d-two.sm h3{font-size:calc(1.1*var(--u));margin:0 0 calc(.6*var(--u))}
+.d-two.sm ul{font-size:calc(.95*var(--u));margin:0}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "GeneralContractor", "name": "РСК Групп", "url": "https://adamec1213-sketch.github.io/smm-bot/", "logo": "https://adamec1213-sketch.github.io/smm-bot/assets/img/logo-rsk-circle.jpg", "image": "https://adamec1213-sketch.github.io/smm-bot/assets/img/hero.jpg", "telephone": "+79819082297", "email": "rsk-47@bk.ru", "foundingDate": "2011", "areaServed": ["Москва", "Московская область", "Санкт-Петербург", "Ленинградская область"], "sameAs": ["https://instagram.com/prorab.artem", "https://t.me/spbpokoleniya"]}</script>
 
@@ -493,19 +527,35 @@ input.bad{border-color:var(--err)}
   <!-- ===== ПАНЕЛИ ===== -->
   <section class="card hidden" data-pane="panel">
     <h2>Сэндвич-панели</h2>
-    <div><label class="f">Назначение</label>
-      <div class="seg">
-        <label><input type="radio" name="p_type" value="wall" checked><span>Стеновые</span></label>
-        <label><input type="radio" name="p_type" value="roof"><span>Кровельные</span></label>
+    <div class="hint" style="margin:-8px 0 14px">Можно выбрать стеновые и кровельные сразу — посчитаем в одном КП.</div>
+    <div class="pblock" id="pb_wall">
+      <label class="ptog"><input type="checkbox" id="p_wall_on" checked><span>Стеновые панели</span></label>
+      <div class="pbody">
+        <div><label class="f">Утеплитель</label><div class="seg" id="p_wall_core"></div><div class="hint" id="p_wall_hint"></div></div>
+        <div class="grid" style="margin-top:14px">
+          <div><label class="f">Площадь, м²</label><input type="number" id="p_wall_area" value="500" min="10" max="100000" inputmode="numeric"></div>
+          <div><label class="f">Толщина, мм</label><select id="p_wall_th"></select></div>
+          <div><label class="f">Ширина панели, мм</label><select id="p_wall_w"></select></div>
+        </div>
       </div>
     </div>
-    <div style="margin-top:16px"><label class="f">Утеплитель</label><div class="seg" id="p_core_box"></div><div class="hint" id="p_core_hint"></div></div>
-    <div class="grid" style="margin-top:16px">
-      <div><label class="f">Толщина, мм</label><select id="p_th"></select></div>
-      <div id="p_w_box"><label class="f">Ширина панели, мм</label><select id="p_w"></select></div>
+    <div class="pblock" id="pb_roof">
+      <label class="ptog"><input type="checkbox" id="p_roof_on"><span>Кровельные панели</span></label>
+      <div class="pbody">
+        <div><label class="f">Утеплитель</label><div class="seg" id="p_roof_core"></div><div class="hint" id="p_roof_hint"></div></div>
+        <div class="grid" style="margin-top:14px">
+          <div><label class="f">Площадь, м²</label><input type="number" id="p_roof_area" value="600" min="10" max="100000" inputmode="numeric"></div>
+          <div><label class="f">Толщина, мм</label><select id="p_roof_th"></select></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="card hidden" data-pane="panel">
+    <h2>Металл и цвет</h2>
+    <div class="grid">
       <div><label class="f">Металл снаружи, мм</label><select id="p_mt"></select></div>
       <div><label class="f">Металл внутри, мм</label><select id="p_mb"></select></div>
-      <div><label class="f">Площадь, м²</label><input type="number" id="p_area" value="500" min="10" max="100000" inputmode="numeric"></div>
     </div>
     <div style="margin-top:16px"><label class="f">Цвет снаружи (RAL)</label><div class="swatches" id="p_ral_box"></div><div class="hint" id="p_ral_hint"></div></div>
     <div style="margin-top:16px"><label class="f">Монтаж</label>
@@ -918,7 +968,7 @@ function renderDeck(r, client, no, days, C) {
   function coverTitle() {
     let t1, t2 = '';
     if (ang) { t1 = (v.use || 'Склад').replace('Производство / цех', 'Производство'); t2 = nf(g.L, 1) + ' × ' + nf(g.W, 1) + ' м'; }
-    else if (r.kind === 'Сэндвич-панели') { t1 = 'Сэндвич-\u200bпанели'; t2 = (r.params.find(p => p[0] === 'Площадь') || [0, ''])[1]; }
+    else if (r.kind === 'Сэндвич-панели') { t1 = 'Сэндвич-\u200bпанели'; t2 = r.panelArea ? nf(r.panelArea) + ' м²' : (r.params.find(p => p[0] === 'Площадь') || [0, ''])[1]; }
     else { t1 = 'Металло-\u200bконструкции'; t2 = (r.params.find(p => p[0] === 'Масса') || [0, ''])[1]; }
     const longest = Math.max.apply(null, t1.split(/[\s\u200b]+/).map(w => w.length));
     return '<h1 class="' + (longest > 11 ? 'long' : '') + '">' + esc(t1.toUpperCase()).replace(/\u200b/g, '<br>') + (t2 ? '<br><em>' + esc(String(t2).toUpperCase()) + '</em>' : '') + '</h1>';
@@ -941,13 +991,29 @@ function renderDeck(r, client, no, days, C) {
     f.slabV ? [nf(f.slabV, 1) + ' м³', 'бетона в плите пола ' + nf(f.slabT) + ' мм'] : f.piles ? [nf(f.piles) + ' шт', 'винтовых свай под колонны'] : f.footings ? [nf(f.footings) + ' шт', 'монолитных фундаментов под колонны'] : null,
     f.wallM2 ? [nf(f.wallM2) + ' м²', 'стеновых сэндвич-панелей; кровля ' + nf(f.roofM2 || 0) + ' м²'] : null
   ].filter(Boolean) : r.params.slice(0, 4).map(p => [p[1], p[0]]);
+  if (r.panels && r.panels.length) {
+    const hex = c => ((typeof PANEL_OPTS !== 'undefined' ? PANEL_OPTS : {}).colors || []).find(x => x[0] == c) || [c, '', '#999'];
+    const mmx = x => String(x).replace('.', ',') + ' мм';
+    const pc = x => { const h = hex(x.ral); return '<div class="d-pc"><i class="sw" style="background:' + h[2] + '"></i><small>' + esc(x.kind.toUpperCase()) + ' ПАНЕЛИ</small>' +
+      '<b class="big">' + nf(x.area) + ' м²</b><dl><dt>Утеплитель</dt><dd>' + esc(x.core) + '</dd><dt>Толщина</dt><dd>' + nf(x.thk) + ' мм</dd>' +
+      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + mmx(x.mTop) + ' / ' + mmx(x.mBot) + '</dd>' +
+      '<dt>Цвет</dt><dd>RAL ' + esc(x.ral) + (h[1] ? ', ' + esc(h[1].toLowerCase()) : '') + '</dd></dl>' +
+      '<div class="pr"><span>Цена за м²</span><b>' + rub(x.price) + '</b></div><div class="pr"><span>Сумма</span><b>' + rub(x.price * x.area) + '</b></div></div>'; };
+    S.push(head('Ваш заказ') + '<div class="d-ord">' + r.panels.map(pc).join('') +
+      (r.panels.length === 1 ? '<div class="d-pc ph"><img src="' + A + 'bc-fasad-s.jpg" alt=""></div>' : '') +
+      '<div class="d-pc dark"><small>ИТОГО ' + esc(VL) + '</small><b class="big">' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b><dl>' +
+      '<dt>Панелей</dt><dd>' + nf(r.panelArea || 0) + ' м²</dd><dt>Средняя цена</dt><dd>' + rub(r.total / (r.panelArea || 1)) + ' за м²</dd>' +
+      '<dt>Монтаж</dt><dd>' + (r.mont ? 'включён' : 'только поставка') + '</dd><dt>Доставка</dt><dd>' + (r.trips ? nf(r.trips) + ' ' + (r.trips % 10 === 1 && r.trips % 100 !== 11 ? 'рейс' : [2,3,4].includes(r.trips % 10) && ![12,13,14].includes(r.trips % 100) ? 'рейса' : 'рейсов') : 'самовывоз') + '</dd>' +
+      (withVat ? '<dt>В т. ч. НДС</dt><dd>' + rub(vatSum) + '</dd>' : '<dt>НДС</dt><dd>не включён</dd>') + '</dl></div></div>' +
+      '<p class="d-note">Цена панелей — по прайсу поставщика на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
+  } else {
   S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
-    '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
-    (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
-    '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
-    '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК Групп по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
-    (ang ? '<div class="d-row2"><div class="d-pic">' + isoBuilding(g) + '</div><div class="d-term"><small>СРОК МОНТАЖА</small><b>≈ ' + nf(r.days || 0) + ' дней</b><span>каркас, стены и кровля — по графику калькулятора; полы и отделка — по графику после договора</span></div></div>' : ''));
-
+      '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
+      (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
+      '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
+      '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК Групп по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
+      (ang ? '<div class="d-row2"><div class="d-pic">' + isoBuilding(g) + '</div><div class="d-term"><small>СРОК МОНТАЖА</small><b>≈ ' + nf(r.days || 0) + ' дней</b><span>каркас, стены и кровля — по графику калькулятора; полы и отделка — по графику после договора</span></div></div>' : ''));
+  }
   if (ang) {
     // 3. Общий вид
     S.push(head('Проект: общий вид') + '<div class="d-split">' + card(isoBuilding(g), 'tall') + facts([
@@ -1000,38 +1066,41 @@ function renderDeck(r, client, no, days, C) {
 
   // Из чего складывается цена
   const gr = grouped(r.items), tot = r.total || 1;
-  S.push(head('Из чего складывается цена') + '<div class="d-groups">' + gr.map((x, i) => {
+  if (ang) S.push(head('Из чего складывается цена') + '<div class="d-groups">' + gr.map((x, i) => {
     const top = x.rows.slice().sort((a, b) => b[4] - a[4]).slice(0, 2);
     const max = gr.reduce((m, y) => Math.max(m, y.sum), 0);
     return '<div class="' + (x.sum === max ? 'dark' : '') + '"><small>' + esc(x.name.toUpperCase()) + '</small><b>' + rub(x.sum) + ' <em>' + pct(x.sum, tot) + '</em></b><ul>' +
       top.map(t => '<li>' + esc(t[0].replace(/\s*\(.*?\)\s*/g, ' ').trim()) + ': ' + rub(t[4]) + '</li>').join('') + '</ul></div>';
   }).join('') + '</div><div class="d-total"><span>Итого ' + esc(vl) + '</span><b>' + rub(r.total) + '</b>' + (withVat ? '<span>в том числе НДС: <b>' + rub(vatSum) + '</b></span>' : '') + '</div>');
 
+  const low = t => /^[А-ЯЁ][а-яё]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
+  const inc = gr.map(x => x.name + ': ' + x.rows.map(i => low(i[0].replace(/\s*\(.*?\)\s*/g, ' ').replace(new RegExp('^' + x.name + ':\\s*', 'i'), '').trim())).slice(0, 4).join(', '));
+  const exc = r.excluded.concat(ang ? ['разрешение на строительство, экспертиза, ввод в эксплуатацию — по отдельному договору'] : []);
   // Стоимость по разделам (таблицы по ~13 строк)
   const rows = []; let n = 0;
   gr.forEach(x => { rows.push({ h: x.name, sum: x.sum }); x.rows.forEach(it => rows.push({ n: ++n, it: it })); });
   const per = 15, pages = Math.max(1, Math.ceil(rows.length / per));
   for (let p = 0; p < pages; p++) {
     const part = rows.slice(p * per, (p + 1) * per), last = p === pages - 1;
-    S.push(head('Стоимость по разделам' + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена' + (withVat ? ' с НДС' : '') + ', ₽</th><th class="n">Сумма' + (withVat ? ' с НДС' : '') + ', ₽</th></tr></thead><tbody>' +
+    S.push(head((ang ? 'Стоимость по разделам' : 'Смета') + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена' + (withVat ? ' с НДС' : '') + ', ₽</th><th class="n">Сумма' + (withVat ? ' с НДС' : '') + ', ₽</th></tr></thead><tbody>' +
       part.map(x => x.h ? '<tr class="grp"><td></td><td>' + esc(x.h.toUpperCase()) + '</td><td></td><td></td><td class="n">' + nf(Math.round(x.sum)) + '</td></tr>'
         : '<tr><td>' + x.n + '</td><td>' + esc(x.it[0]) + '</td><td class="n">' + nf(x.it[1], x.it[1] % 1 ? 1 : 0) + ' ' + esc(x.it[2]) + '</td><td class="n">' + nf(x.it[3], 2) + '</td><td class="n">' + nf(Math.round(x.it[4])) + '</td></tr>').join('') +
       '</tbody>' + (last ? '<tfoot>' + (withVat ? '<tr class="vat"><td></td><td>В том числе НДС ' + esc(vat) + '</td><td></td><td></td><td class="n">' + nf(Math.round(vatSum)) + '</td></tr>' : '') + '<tr><td></td><td>Итого ' + esc(vl) + '</td><td></td><td class="n">' + (ang ? nf(Math.round(r.total / g.L / g.W)) + ' за м²' : '') + '</td><td class="n">' + nf(Math.round(r.total)) + '</td></tr></tfoot>' : '') +
-      '</table>' + (last && r.notes.length ? '<p class="d-note">' + r.notes.map(esc).join(' ') + '</p>' : ''));
+      '</table>' + (last && r.notes.length ? '<p class="d-note">' + r.notes.map(esc).join(' ') + '</p>' : '') +
+      (last && !ang ? '<div class="d-two sm"><div><h3>Входит в стоимость</h3><ul>' + inc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' +
+        '<div><h3>Не входит</h3><ul>' + exc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>' : ''));
   }
 
-  // Состав предложения
-  const low = t => /^[А-ЯЁ][а-яё]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
-  const inc = gr.map(x => x.name + ': ' + x.rows.map(i => low(i[0].replace(/\s*\(.*?\)\s*/g, ' ').replace(new RegExp('^' + x.name + ':\\s*', 'i'), '').trim())).slice(0, 4).join(', '));
-  S.push(head('Состав предложения') + '<div class="d-two"><div><h3>Входит в стоимость</h3><ul>' + inc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' +
-    '<div><h3>Не входит</h3><ul>' + r.excluded.concat(['разрешение на строительство, экспертиза, ввод в эксплуатацию — по отдельному договору']).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>');
+  // Состав предложения (для ангара — отдельным слайдом)
+  if (ang) S.push(head('Состав предложения') + '<div class="d-two"><div><h3>Входит в стоимость</h3><ul>' + inc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' +
+    '<div><h3>Не входит</h3><ul>' + exc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>');
 
   // Полный цикл
   const st = ['Анализ и ТЗ', 'Эскиз и бюджет', 'Рабочий проект, экспертиза', 'Разрешительная документация', 'Фиксированная смета и график', 'Строительство и надзор', 'Подключение к сетям', 'Ввод в эксплуатацию', 'Гарантия'];
   const qc = [['Нулевой цикл', 'геодезическая разбивка, грунты и основание, бетонные работы'], ['Несущий каркас и ограждения', 'монтаж, узлы, антикор; опалубка, армирование; примыкания и плоскостность'],
     ['Инженерные системы и тепловой контур', 'герметичность и изоляция, узлы примыканий и проходки, инженерные вводы'], ['Фасад, кровля и безопасность', 'кровельный пирог и водосток, крепления и стыки фасада, противопожарные конструкции'],
     ['Финиш и подготовка к эксплуатации', 'исполнительная документация, комплексное опробование систем']];
-  S.push(head('Полный цикл', 'генподряда') + '<div class="d-cycle"><ol>' + st.map((x, i) => '<li class="' + (i % 2 ? '' : 'a') + '"><b>' + String(i + 1).padStart(2, '0') + '</b>' + esc(x) + '</li>').join('') + '</ol>' +
+  if (ang) S.push(head('Полный цикл', 'генподряда') + '<div class="d-cycle"><ol>' + st.map((x, i) => '<li class="' + (i % 2 ? '' : 'a') + '"><b>' + String(i + 1).padStart(2, '0') + '</b>' + esc(x) + '</li>').join('') + '</ol>' +
     '<div class="d-qc"><h3>КОНТРОЛЬ КАЧЕСТВА НА КАЖДОМ ЭТАПЕ</h3>' + qc.map(q => '<div><i>✓</i><b>' + esc(q[0]) + '</b><span>' + esc(q[1]) + '</span></div>').join('') + '</div></div>');
 
   // Объекты
@@ -1086,13 +1155,14 @@ const opts = (sel, list, def, label) => { const cur = sel.value;
   sel.value = list.map(String).includes(cur) ? cur : String(def); };
 const ralName = c => (PANEL_OPTS.colors.find(x => x[0] == c) || [c, ''])[1];
 function panelOpts(){
-  const type = radio('p_type') || 'wall', box = $('p_core_box');
-  const core = radio('p_core') || 'минвата';
-  box.innerHTML = PANEL_OPTS.cores[type].map(c => '<label><input type="radio" name="p_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
-  box.querySelectorAll('input').forEach(e => e.addEventListener('change', hints));
-  $('p_core_hint').textContent = PANEL_OPTS.coreNote[core] || '';
-  opts($('p_th'), PANEL_OPTS.thk[type+'|'+core], type === 'roof' ? 150 : 100);
-  opts($('p_w'), PANEL_OPTS.widths[type], 1000); $('p_w_box').classList.toggle('hidden', type === 'roof');
+  ['wall','roof'].forEach(type => {
+    const box = $('p_'+type+'_core'), core = radio('p_'+type+'_core') || 'минвата';
+    box.innerHTML = PANEL_OPTS.cores[type].map(c => '<label><input type="radio" name="p_'+type+'_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
+    box.querySelectorAll('input').forEach(e => e.addEventListener('change', hints));
+    $('p_'+type+'_hint').textContent = PANEL_OPTS.coreNote[core] || '';
+    opts($('p_'+type+'_th'), PANEL_OPTS.thk[type+'|'+core], type === 'roof' ? 150 : 100);
+  });
+  opts($('p_wall_w'), PANEL_OPTS.widths.wall, 1000);
   opts($('p_mt'), PANEL_OPTS.metals, 0.45); opts($('p_mb'), PANEL_OPTS.metals, 0.45);
   const rb = $('p_ral_box');
   if (!rb.children.length) {
@@ -1137,8 +1207,13 @@ function params(){
     if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = 'нет'; }
     return p;
   }
-  if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,
-    mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+  if (tab === 'panel') {
+    const blk = k => $('p_'+k+'_on').checked ? { on: '1', core: radio('p_'+k+'_core'), thk: +$('p_'+k+'_th').value, area: num('p_'+k+'_area'), width: k === 'wall' ? +$('p_wall_w').value : 1000 } : { on: '0' };
+    const w = blk('wall'), rf = blk('roof'), first = w.on === '1' ? ['wall', w] : ['roof', rf];
+    // type/core/thk/width/area — старый формат, на случай если в таблице ещё прежний код
+    return { wall: w, roof: rf, type: first[0], core: first[1].core, thk: first[1].thk, width: first[1].width, area: first[1].area,
+      mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+  }
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
 function check(p){
@@ -1147,7 +1222,11 @@ function check(p){
     if (p.W < 12 || p.W > 36) return 'Ширина (пролёт) — от 12 до 36 м. Шире — посчитаем индивидуально.';
     if (p.H < 4 || p.H > 14) return 'Высота до карниза — от 4 до 14 м.';
   }
-  if (tab === 'panel' && (p.area < 10 || p.area > 100000)) return 'Площадь панелей — от 10 м².';
+  if (tab === 'panel') {
+    const on = ['wall','roof'].filter(k => p[k].on === '1');
+    if (!on.length) return 'Выберите стеновые или кровельные панели.';
+    if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
+  }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }
   return '';

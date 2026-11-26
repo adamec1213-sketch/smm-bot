@@ -66,19 +66,35 @@
   <!-- ===== ПАНЕЛИ ===== -->
   <section class="card hidden" data-pane="panel">
     <h2>Сэндвич-панели</h2>
-    <div><label class="f">Назначение</label>
-      <div class="seg">
-        <label><input type="radio" name="p_type" value="wall" checked><span>Стеновые</span></label>
-        <label><input type="radio" name="p_type" value="roof"><span>Кровельные</span></label>
+    <div class="hint" style="margin:-8px 0 14px">Можно выбрать стеновые и кровельные сразу — посчитаем в одном КП.</div>
+    <div class="pblock" id="pb_wall">
+      <label class="ptog"><input type="checkbox" id="p_wall_on" checked><span>Стеновые панели</span></label>
+      <div class="pbody">
+        <div><label class="f">Утеплитель</label><div class="seg" id="p_wall_core"></div><div class="hint" id="p_wall_hint"></div></div>
+        <div class="grid" style="margin-top:14px">
+          <div><label class="f">Площадь, м²</label><input type="number" id="p_wall_area" value="500" min="10" max="100000" inputmode="numeric"></div>
+          <div><label class="f">Толщина, мм</label><select id="p_wall_th"></select></div>
+          <div><label class="f">Ширина панели, мм</label><select id="p_wall_w"></select></div>
+        </div>
       </div>
     </div>
-    <div style="margin-top:16px"><label class="f">Утеплитель</label><div class="seg" id="p_core_box"></div><div class="hint" id="p_core_hint"></div></div>
-    <div class="grid" style="margin-top:16px">
-      <div><label class="f">Толщина, мм</label><select id="p_th"></select></div>
-      <div id="p_w_box"><label class="f">Ширина панели, мм</label><select id="p_w"></select></div>
+    <div class="pblock" id="pb_roof">
+      <label class="ptog"><input type="checkbox" id="p_roof_on"><span>Кровельные панели</span></label>
+      <div class="pbody">
+        <div><label class="f">Утеплитель</label><div class="seg" id="p_roof_core"></div><div class="hint" id="p_roof_hint"></div></div>
+        <div class="grid" style="margin-top:14px">
+          <div><label class="f">Площадь, м²</label><input type="number" id="p_roof_area" value="600" min="10" max="100000" inputmode="numeric"></div>
+          <div><label class="f">Толщина, мм</label><select id="p_roof_th"></select></div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="card hidden" data-pane="panel">
+    <h2>Металл и цвет</h2>
+    <div class="grid">
       <div><label class="f">Металл снаружи, мм</label><select id="p_mt"></select></div>
       <div><label class="f">Металл внутри, мм</label><select id="p_mb"></select></div>
-      <div><label class="f">Площадь, м²</label><input type="number" id="p_area" value="500" min="10" max="100000" inputmode="numeric"></div>
     </div>
     <div style="margin-top:16px"><label class="f">Цвет снаружи (RAL)</label><div class="swatches" id="p_ral_box"></div><div class="hint" id="p_ral_hint"></div></div>
     <div style="margin-top:16px"><label class="f">Монтаж</label>

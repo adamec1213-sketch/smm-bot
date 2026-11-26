@@ -17,13 +17,14 @@ const opts = (sel, list, def, label) => { const cur = sel.value;
   sel.value = list.map(String).includes(cur) ? cur : String(def); };
 const ralName = c => (PANEL_OPTS.colors.find(x => x[0] == c) || [c, ''])[1];
 function panelOpts(){
-  const type = radio('p_type') || 'wall', box = $('p_core_box');
-  const core = radio('p_core') || 'минвата';
-  box.innerHTML = PANEL_OPTS.cores[type].map(c => '<label><input type="radio" name="p_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
-  box.querySelectorAll('input').forEach(e => e.addEventListener('change', hints));
-  $('p_core_hint').textContent = PANEL_OPTS.coreNote[core] || '';
-  opts($('p_th'), PANEL_OPTS.thk[type+'|'+core], type === 'roof' ? 150 : 100);
-  opts($('p_w'), PANEL_OPTS.widths[type], 1000); $('p_w_box').classList.toggle('hidden', type === 'roof');
+  ['wall','roof'].forEach(type => {
+    const box = $('p_'+type+'_core'), core = radio('p_'+type+'_core') || 'минвата';
+    box.innerHTML = PANEL_OPTS.cores[type].map(c => '<label><input type="radio" name="p_'+type+'_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
+    box.querySelectorAll('input').forEach(e => e.addEventListener('change', hints));
+    $('p_'+type+'_hint').textContent = PANEL_OPTS.coreNote[core] || '';
+    opts($('p_'+type+'_th'), PANEL_OPTS.thk[type+'|'+core], type === 'roof' ? 150 : 100);
+  });
+  opts($('p_wall_w'), PANEL_OPTS.widths.wall, 1000);
   opts($('p_mt'), PANEL_OPTS.metals, 0.45); opts($('p_mb'), PANEL_OPTS.metals, 0.45);
   const rb = $('p_ral_box');
   if (!rb.children.length) {
@@ -68,8 +69,13 @@ function params(){
     if (p.floor === 'монолитная плита') { p.slabMode = 'вручную'; p.slabT = radio('a_slabT'); p.xps = 'нет'; }
     return p;
   }
-  if (tab === 'panel') return { type: radio('p_type'), core: radio('p_core'), thk: +$('p_th').value, width: +$('p_w').value,
-    mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), area: num('p_area'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+  if (tab === 'panel') {
+    const blk = k => $('p_'+k+'_on').checked ? { on: '1', core: radio('p_'+k+'_core'), thk: +$('p_'+k+'_th').value, area: num('p_'+k+'_area'), width: k === 'wall' ? +$('p_wall_w').value : 1000 } : { on: '0' };
+    const w = blk('wall'), rf = blk('roof'), first = w.on === '1' ? ['wall', w] : ['roof', rf];
+    // type/core/thk/width/area — старый формат, на случай если в таблице ещё прежний код
+    return { wall: w, roof: rf, type: first[0], core: first[1].core, thk: first[1].thk, width: first[1].width, area: first[1].area,
+      mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+  }
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
 function check(p){
@@ -78,7 +84,11 @@ function check(p){
     if (p.W < 12 || p.W > 36) return 'Ширина (пролёт) — от 12 до 36 м. Шире — посчитаем индивидуально.';
     if (p.H < 4 || p.H > 14) return 'Высота до карниза — от 4 до 14 м.';
   }
-  if (tab === 'panel' && (p.area < 10 || p.area > 100000)) return 'Площадь панелей — от 10 м².';
+  if (tab === 'panel') {
+    const on = ['wall','roof'].filter(k => p[k].on === '1');
+    if (!on.length) return 'Выберите стеновые или кровельные панели.';
+    if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
+  }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }
   return '';

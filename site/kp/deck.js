@@ -260,7 +260,7 @@ function renderDeck(r, client, no, days, C) {
   function coverTitle() {
     let t1, t2 = '';
     if (ang) { t1 = (v.use || 'Склад').replace('Производство / цех', 'Производство'); t2 = nf(g.L, 1) + ' × ' + nf(g.W, 1) + ' м'; }
-    else if (r.kind === 'Сэндвич-панели') { t1 = 'Сэндвич-\u200bпанели'; t2 = (r.params.find(p => p[0] === 'Площадь') || [0, ''])[1]; }
+    else if (r.kind === 'Сэндвич-панели') { t1 = 'Сэндвич-\u200bпанели'; t2 = r.panelArea ? nf(r.panelArea) + ' м²' : (r.params.find(p => p[0] === 'Площадь') || [0, ''])[1]; }
     else { t1 = 'Металло-\u200bконструкции'; t2 = (r.params.find(p => p[0] === 'Масса') || [0, ''])[1]; }
     const longest = Math.max.apply(null, t1.split(/[\s\u200b]+/).map(w => w.length));
     return '<h1 class="' + (longest > 11 ? 'long' : '') + '">' + esc(t1.toUpperCase()).replace(/\u200b/g, '<br>') + (t2 ? '<br><em>' + esc(String(t2).toUpperCase()) + '</em>' : '') + '</h1>';
@@ -283,13 +283,29 @@ function renderDeck(r, client, no, days, C) {
     f.slabV ? [nf(f.slabV, 1) + ' м³', 'бетона в плите пола ' + nf(f.slabT) + ' мм'] : f.piles ? [nf(f.piles) + ' шт', 'винтовых свай под колонны'] : f.footings ? [nf(f.footings) + ' шт', 'монолитных фундаментов под колонны'] : null,
     f.wallM2 ? [nf(f.wallM2) + ' м²', 'стеновых сэндвич-панелей; кровля ' + nf(f.roofM2 || 0) + ' м²'] : null
   ].filter(Boolean) : r.params.slice(0, 4).map(p => [p[1], p[0]]);
+  if (r.panels && r.panels.length) {
+    const hex = c => ((typeof PANEL_OPTS !== 'undefined' ? PANEL_OPTS : {}).colors || []).find(x => x[0] == c) || [c, '', '#999'];
+    const mmx = x => String(x).replace('.', ',') + ' мм';
+    const pc = x => { const h = hex(x.ral); return '<div class="d-pc"><i class="sw" style="background:' + h[2] + '"></i><small>' + esc(x.kind.toUpperCase()) + ' ПАНЕЛИ</small>' +
+      '<b class="big">' + nf(x.area) + ' м²</b><dl><dt>Утеплитель</dt><dd>' + esc(x.core) + '</dd><dt>Толщина</dt><dd>' + nf(x.thk) + ' мм</dd>' +
+      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + mmx(x.mTop) + ' / ' + mmx(x.mBot) + '</dd>' +
+      '<dt>Цвет</dt><dd>RAL ' + esc(x.ral) + (h[1] ? ', ' + esc(h[1].toLowerCase()) : '') + '</dd></dl>' +
+      '<div class="pr"><span>Цена за м²</span><b>' + rub(x.price) + '</b></div><div class="pr"><span>Сумма</span><b>' + rub(x.price * x.area) + '</b></div></div>'; };
+    S.push(head('Ваш заказ') + '<div class="d-ord">' + r.panels.map(pc).join('') +
+      (r.panels.length === 1 ? '<div class="d-pc ph"><img src="' + A + 'bc-fasad-s.jpg" alt=""></div>' : '') +
+      '<div class="d-pc dark"><small>ИТОГО ' + esc(VL) + '</small><b class="big">' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b><dl>' +
+      '<dt>Панелей</dt><dd>' + nf(r.panelArea || 0) + ' м²</dd><dt>Средняя цена</dt><dd>' + rub(r.total / (r.panelArea || 1)) + ' за м²</dd>' +
+      '<dt>Монтаж</dt><dd>' + (r.mont ? 'включён' : 'только поставка') + '</dd><dt>Доставка</dt><dd>' + (r.trips ? nf(r.trips) + ' ' + (r.trips % 10 === 1 && r.trips % 100 !== 11 ? 'рейс' : [2,3,4].includes(r.trips % 10) && ![12,13,14].includes(r.trips % 100) ? 'рейса' : 'рейсов') : 'самовывоз') + '</dd>' +
+      (withVat ? '<dt>В т. ч. НДС</dt><dd>' + rub(vatSum) + '</dd>' : '<dt>НДС</dt><dd>не включён</dd>') + '</dl></div></div>' +
+      '<p class="d-note">Цена панелей — по прайсу поставщика на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
+  } else {
   S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
-    '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
-    (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
-    '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
-    '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК Групп по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
-    (ang ? '<div class="d-row2"><div class="d-pic">' + isoBuilding(g) + '</div><div class="d-term"><small>СРОК МОНТАЖА</small><b>≈ ' + nf(r.days || 0) + ' дней</b><span>каркас, стены и кровля — по графику калькулятора; полы и отделка — по графику после договора</span></div></div>' : ''));
-
+      '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
+      (ang ? '<div><small>ЦЕНА ЗА М² ЗАСТРОЙКИ</small><b>' + rub(r.total / g.L / g.W) + '</b></div>' : '<div><small>ПОЗИЦИЙ В РАСЧЁТЕ</small><b>' + r.items.length + '</b></div>') + '</div>' +
+      '<div class="d-nums">' + nums.map(n => '<div><b>' + esc(n[0]) + '</b><span>' + esc(n[1]) + '</span></div>').join('') + '</div>' +
+      '<p class="d-p">Расчёт сделан автоматически по калькулятору стоимости РСК Групп по введённым параметрам. Окончательная цена — в договоре после уточнения ТЗ, геологии и участка.</p>' +
+      (ang ? '<div class="d-row2"><div class="d-pic">' + isoBuilding(g) + '</div><div class="d-term"><small>СРОК МОНТАЖА</small><b>≈ ' + nf(r.days || 0) + ' дней</b><span>каркас, стены и кровля — по графику калькулятора; полы и отделка — по графику после договора</span></div></div>' : ''));
+  }
   if (ang) {
     // 3. Общий вид
     S.push(head('Проект: общий вид') + '<div class="d-split">' + card(isoBuilding(g), 'tall') + facts([
@@ -342,38 +358,41 @@ function renderDeck(r, client, no, days, C) {
 
   // Из чего складывается цена
   const gr = grouped(r.items), tot = r.total || 1;
-  S.push(head('Из чего складывается цена') + '<div class="d-groups">' + gr.map((x, i) => {
+  if (ang) S.push(head('Из чего складывается цена') + '<div class="d-groups">' + gr.map((x, i) => {
     const top = x.rows.slice().sort((a, b) => b[4] - a[4]).slice(0, 2);
     const max = gr.reduce((m, y) => Math.max(m, y.sum), 0);
     return '<div class="' + (x.sum === max ? 'dark' : '') + '"><small>' + esc(x.name.toUpperCase()) + '</small><b>' + rub(x.sum) + ' <em>' + pct(x.sum, tot) + '</em></b><ul>' +
       top.map(t => '<li>' + esc(t[0].replace(/\s*\(.*?\)\s*/g, ' ').trim()) + ': ' + rub(t[4]) + '</li>').join('') + '</ul></div>';
   }).join('') + '</div><div class="d-total"><span>Итого ' + esc(vl) + '</span><b>' + rub(r.total) + '</b>' + (withVat ? '<span>в том числе НДС: <b>' + rub(vatSum) + '</b></span>' : '') + '</div>');
 
+  const low = t => /^[А-ЯЁ][а-яё]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
+  const inc = gr.map(x => x.name + ': ' + x.rows.map(i => low(i[0].replace(/\s*\(.*?\)\s*/g, ' ').replace(new RegExp('^' + x.name + ':\\s*', 'i'), '').trim())).slice(0, 4).join(', '));
+  const exc = r.excluded.concat(ang ? ['разрешение на строительство, экспертиза, ввод в эксплуатацию — по отдельному договору'] : []);
   // Стоимость по разделам (таблицы по ~13 строк)
   const rows = []; let n = 0;
   gr.forEach(x => { rows.push({ h: x.name, sum: x.sum }); x.rows.forEach(it => rows.push({ n: ++n, it: it })); });
   const per = 15, pages = Math.max(1, Math.ceil(rows.length / per));
   for (let p = 0; p < pages; p++) {
     const part = rows.slice(p * per, (p + 1) * per), last = p === pages - 1;
-    S.push(head('Стоимость по разделам' + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена' + (withVat ? ' с НДС' : '') + ', ₽</th><th class="n">Сумма' + (withVat ? ' с НДС' : '') + ', ₽</th></tr></thead><tbody>' +
+    S.push(head((ang ? 'Стоимость по разделам' : 'Смета') + (pages > 1 ? ' (' + (p + 1) + '/' + pages + ')' : '')) + '<table class="d-tbl wide"><thead><tr><th>№</th><th>Позиция</th><th class="n">Объём</th><th class="n">Цена' + (withVat ? ' с НДС' : '') + ', ₽</th><th class="n">Сумма' + (withVat ? ' с НДС' : '') + ', ₽</th></tr></thead><tbody>' +
       part.map(x => x.h ? '<tr class="grp"><td></td><td>' + esc(x.h.toUpperCase()) + '</td><td></td><td></td><td class="n">' + nf(Math.round(x.sum)) + '</td></tr>'
         : '<tr><td>' + x.n + '</td><td>' + esc(x.it[0]) + '</td><td class="n">' + nf(x.it[1], x.it[1] % 1 ? 1 : 0) + ' ' + esc(x.it[2]) + '</td><td class="n">' + nf(x.it[3], 2) + '</td><td class="n">' + nf(Math.round(x.it[4])) + '</td></tr>').join('') +
       '</tbody>' + (last ? '<tfoot>' + (withVat ? '<tr class="vat"><td></td><td>В том числе НДС ' + esc(vat) + '</td><td></td><td></td><td class="n">' + nf(Math.round(vatSum)) + '</td></tr>' : '') + '<tr><td></td><td>Итого ' + esc(vl) + '</td><td></td><td class="n">' + (ang ? nf(Math.round(r.total / g.L / g.W)) + ' за м²' : '') + '</td><td class="n">' + nf(Math.round(r.total)) + '</td></tr></tfoot>' : '') +
-      '</table>' + (last && r.notes.length ? '<p class="d-note">' + r.notes.map(esc).join(' ') + '</p>' : ''));
+      '</table>' + (last && r.notes.length ? '<p class="d-note">' + r.notes.map(esc).join(' ') + '</p>' : '') +
+      (last && !ang ? '<div class="d-two sm"><div><h3>Входит в стоимость</h3><ul>' + inc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' +
+        '<div><h3>Не входит</h3><ul>' + exc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>' : ''));
   }
 
-  // Состав предложения
-  const low = t => /^[А-ЯЁ][а-яё]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t;
-  const inc = gr.map(x => x.name + ': ' + x.rows.map(i => low(i[0].replace(/\s*\(.*?\)\s*/g, ' ').replace(new RegExp('^' + x.name + ':\\s*', 'i'), '').trim())).slice(0, 4).join(', '));
-  S.push(head('Состав предложения') + '<div class="d-two"><div><h3>Входит в стоимость</h3><ul>' + inc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' +
-    '<div><h3>Не входит</h3><ul>' + r.excluded.concat(['разрешение на строительство, экспертиза, ввод в эксплуатацию — по отдельному договору']).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>');
+  // Состав предложения (для ангара — отдельным слайдом)
+  if (ang) S.push(head('Состав предложения') + '<div class="d-two"><div><h3>Входит в стоимость</h3><ul>' + inc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' +
+    '<div><h3>Не входит</h3><ul>' + exc.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div></div>');
 
   // Полный цикл
   const st = ['Анализ и ТЗ', 'Эскиз и бюджет', 'Рабочий проект, экспертиза', 'Разрешительная документация', 'Фиксированная смета и график', 'Строительство и надзор', 'Подключение к сетям', 'Ввод в эксплуатацию', 'Гарантия'];
   const qc = [['Нулевой цикл', 'геодезическая разбивка, грунты и основание, бетонные работы'], ['Несущий каркас и ограждения', 'монтаж, узлы, антикор; опалубка, армирование; примыкания и плоскостность'],
     ['Инженерные системы и тепловой контур', 'герметичность и изоляция, узлы примыканий и проходки, инженерные вводы'], ['Фасад, кровля и безопасность', 'кровельный пирог и водосток, крепления и стыки фасада, противопожарные конструкции'],
     ['Финиш и подготовка к эксплуатации', 'исполнительная документация, комплексное опробование систем']];
-  S.push(head('Полный цикл', 'генподряда') + '<div class="d-cycle"><ol>' + st.map((x, i) => '<li class="' + (i % 2 ? '' : 'a') + '"><b>' + String(i + 1).padStart(2, '0') + '</b>' + esc(x) + '</li>').join('') + '</ol>' +
+  if (ang) S.push(head('Полный цикл', 'генподряда') + '<div class="d-cycle"><ol>' + st.map((x, i) => '<li class="' + (i % 2 ? '' : 'a') + '"><b>' + String(i + 1).padStart(2, '0') + '</b>' + esc(x) + '</li>').join('') + '</ol>' +
     '<div class="d-qc"><h3>КОНТРОЛЬ КАЧЕСТВА НА КАЖДОМ ЭТАПЕ</h3>' + qc.map(q => '<div><i>✓</i><b>' + esc(q[0]) + '</b><span>' + esc(q[1]) + '</span></div>').join('') + '</div></div>');
 
   // Объекты
