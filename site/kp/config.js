@@ -1,7 +1,7 @@
 // ===== НАСТРОЙКИ =====
 // Ссылка на веб-приложение Apps Script (…/exec) из таблицы с калькулятором.
 // Все цены и формулы — в самой таблице (листы «Справочник», «Смета»), не здесь.
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVxlBqPRHID-NbHi3Zu_CJCcJWQySlslrnyV3NKmBQ-7Adoz44Rbz2JJ4GpIxfswRTRA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIZBVrCcimNVAj5cKX68WVsGPDwq-gZLVmerCrnmGYUovE7BUx9SH731yIJlnnfQAs7g/exec';
 
 const COMPANY = {
   name: 'РСК Групп',
