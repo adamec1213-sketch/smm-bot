@@ -349,15 +349,13 @@ function calcPanel_(p) {
     }
     const trips = deliv ? Math.ceil(total / perTruck) : 0;
     const excluded = ['фасонные элементы — по спецификации', 'разгрузка на объекте'];
-    // Доставка: ставка ₽/км с листа «График» (строка «Доставка панелей, ₽ за км»), но не меньше цены рейса из «Сметы».
-    // Если ставки нет — цена рейса из «Сметы» до 300 км, дальше доставку считает менеджер.
+    // Доставка считается только в черте города завода. Объект в другом городе — доставку считает менеджер.
     let tripPrice = pr('Доставка сэндвич-панелей'), delivNote = '';
-    if (deliv && fac) {
-      const rate = nextTo_('График', 'Доставка панелей, ₽ за км', 0);
-      if (rate > 0) tripPrice = Math.max(tripPrice, fac.km * rate * k);
-      else if (fac.km > 300) { tripPrice = 0; delivNote = 'доставка с завода в г. ' + fac.city + ' до г. ' + fac.to + ' (около ' + fac.km + ' км, ' + trips + ' ' + plural_(trips, 'рейс', 'рейса', 'рейсов') + ') — рассчитаем отдельно'; }
+    if (deliv && fac && fac.to !== fac.city) {
+      tripPrice = 0;
+      delivNote = 'доставка с завода в г. ' + fac.city + ' до г. ' + fac.to + ' (около ' + fac.km + ' км, ' + trips + ' ' + plural_(trips, 'рейс', 'рейса', 'рейсов') + ') — рассчитаем отдельно';
     }
-    if (deliv && tripPrice) items.push(['Доставка сэндвич-панелей' + (fac ? ' из г. ' + fac.city + (fac.to ? ' в г. ' + fac.to : '') : ''), trips, 'рейс', tripPrice]);
+    if (deliv && tripPrice) items.push(['Доставка сэндвич-панелей' + (fac ? ' по г. ' + fac.city : ''), trips, 'рейс', tripPrice]);
     if (delivNote) excluded.unshift(delivNote);
     const mm = x => String(x).replace('.', ',') + ' мм';
     const params = [];

@@ -1233,7 +1233,8 @@ function cityHint(){
   if (!cityPick) { h.textContent = 'Выберите город из списка. Если объект в посёлке, укажите ближайший город.'; return; }
   if (tab !== 'panel') { h.textContent = cityLabel(cityPick); return; }
   const f = nearestFactory(cityPick);
-  h.textContent = 'Ближайший завод-поставщик: ' + f[0] + (f[1] >= 30 ? ', около ' + fmt(f[1]) + ' км до объекта' : '') + '.';
+  h.textContent = f[0] === cityPick[0] ? 'Завод-поставщик в вашем городе: доставка по городу войдёт в расчёт.'
+    : 'Ближайший завод-поставщик: ' + f[0] + ', около ' + fmt(f[1]) + ' км до объекта. Доставку до вашего города рассчитаем отдельно.';
 }
 function cityDraw(){
   cityList.innerHTML = cityHits.map((c, k) => '<li role="option" data-k="'+k+'"'+(k===cityAct?' class="on"':'')+'>'+esc(c[0])+(c[1]?'<small>'+esc(c[1])+'</small>':'')+'</li>').join('');
