@@ -318,13 +318,16 @@ function factoryTable_(sh) {
   });
   if (hdr < 0) return null;
   const g = (s, d) => { const k = Object.keys(set).find(x => x.indexOf(s) === 0); return k === undefined || set[k] === '' ? d : set[k]; };
-  const tiers = v[hdr].slice(3).map(x => num_(String(x).replace(/[^\d]/g, ''))).filter(x => x > 0);
+  // Необязательная колонка D «Ширина, мм»: тогда цены по объёму начинаются с колонки E
+  const wCol = /^ширина/i.test(String(v[hdr][3]).trim()), c0 = wCol ? 4 : 3;
+  const tiers = v[hdr].slice(c0).map(x => num_(String(x).replace(/[^\d]/g, ''))).filter(x => x > 0);
   const rows = {};
   v.slice(hdr + 1).forEach(r => {
     const t = String(r[0]).trim().toLowerCase(), c = String(r[1]).trim().toLowerCase();
     if (!t || !num_(r[2])) return;
-    const core = c.indexOf('пено') === 0 ? 'пенопласт' : c.indexOf('мин') === 0 ? 'минвата' : c;
-    rows[(t.indexOf('кров') === 0 ? 'кровля' : 'стена') + '|' + core + '|' + num_(r[2])] = tiers.map((x, j) => num_(r[3 + j]));
+    const core = c.indexOf('пено') === 0 ? 'пенопласт' : c.indexOf('мин') === 0 ? 'минвата' : c.indexOf('комб') === 0 ? 'КОМБИ' : c;
+    const w = wCol && num_(r[3]) ? '|' + num_(r[3]) : '';
+    rows[(t.indexOf('кров') === 0 ? 'кровля' : 'стена') + '|' + core + '|' + num_(r[2]) + w] = tiers.map((x, j) => num_(r[c0 + j]));
   });
   const metal = String(g('металл', '')).split('/').map(x => num_(String(x).replace(',', '.'))).filter(x => x > 0);
   return { fmt: 'factory', rows: rows, tiers: tiers, withVat: !/^нет/i.test(String(g('цены завода с ндс', 'да'))),
@@ -336,7 +339,8 @@ function factoryTable_(sh) {
 function panelPrice_(t, x, area, vat) {
   const v22 = vat === '22 %';
   if (t.fmt === 'factory') {
-    const row = t.rows[(x.roof ? 'кровля' : 'стена') + '|' + x.core + '|' + x.thk];
+    const k0 = (x.roof ? 'кровля' : 'стена') + '|' + x.core + '|' + x.thk;
+    const row = t.rows[k0 + '|' + x.w] || t.rows[k0];
     if (!row || (t.colors.length && t.colors.indexOf(Number(x.ral)) < 0)) return null;
     let j = 0; t.tiers.forEach((m, i) => { if (area >= m) j = i; });
     if (!row[j]) return null;
