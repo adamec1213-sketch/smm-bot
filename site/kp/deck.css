@@ -310,3 +310,17 @@
 .d-two.sm>div{min-height:0;padding:calc(1.2*var(--u)) calc(1.6*var(--u))}
 .d-two.sm h3{font-size:calc(1.1*var(--u));margin:0 0 calc(.6*var(--u))}
 .d-two.sm ul{font-size:calc(.95*var(--u));margin:0}
+@media screen and (max-width:760px){
+  .d-ord{grid-template-columns:minmax(0,1fr);gap:12px}
+  .d-pc{min-height:0;padding:18px 16px 14px}
+  .d-pc .sw{height:6px}
+  .d-pc small{font-size:11px}
+  .d-pc .big{font-size:30px;margin:6px 0 12px}
+  .d-pc dl{font-size:14px;gap:8px 12px;margin-bottom:12px}
+  .d-pc .pr{font-size:13px;padding-top:8px}
+  .d-pc .pr b{font-size:17px}
+  .d-pc.ph{display:none}
+  .d-two.sm>div{padding:14px 16px}
+  .d-two.sm h3{font-size:15px}
+  .d-two.sm ul{font-size:13px}
+}

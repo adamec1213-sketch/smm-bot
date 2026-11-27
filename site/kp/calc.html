@@ -155,6 +155,12 @@
 
   <!-- ===== КОНТАКТЫ ===== -->
   <section class="card">
+    <h2>Где объект</h2>
+    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Липецк»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
+    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
+  </section>
+
+  <section class="card">
     <h2>НДС в цене</h2>
     <div class="seg" id="vat_box">
       <label><input type="radio" name="vat" value="без НДС"><span>Без НДС</span></label>
@@ -169,7 +175,6 @@
       <div><label class="f">Имя</label><input type="text" id="c_name" autocomplete="name" maxlength="60" placeholder="Как к вам обращаться"></div>
       <div><label class="f">Телефон</label><input type="tel" id="c_phone" autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
     </div>
-    <div style="margin-top:14px"><label class="f">Город / регион объекта</label><input type="text" id="c_city" maxlength="80" placeholder="Например, Москва или Ленинградская обл."></div>
     <input type="text" id="c_site" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     <label class="check"><input type="checkbox" id="c_agree"><span>Согласен на обработку персональных данных для подготовки предложения. <a href="#" id="pol_link">Подробнее</a></span></label>
     <div class="policy hidden" id="policy">Имя, телефон и город нужны только для того, чтобы подготовить предложение и связаться с вами по нему. Данные не передаются третьим лицам. Отозвать согласие можно письмом на <span class="em"></span>.</div>

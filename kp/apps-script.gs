@@ -156,6 +156,7 @@ function nextTo_(sheetName, label, def) {
   const f = SpreadsheetApp.getActive().getSheetByName(sheetName).createTextFinder(label).matchEntireCell(true).findNext();
   return f ? (num_(f.offset(0, 1).getValue()) || def) : def;
 }
+function plural_(n, a, b, c) { n = Math.abs(n) % 100; const m = n % 10; return n > 10 && n < 20 ? c : m === 1 ? a : m > 1 && m < 5 ? b : c; }
 function rub_(v) { return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; }
 
 /** Строки листа «Ввод»: подпись → номер строки. */
@@ -254,11 +255,35 @@ function calcAngar_(p) {
   });
 }
 
-// ---------- Сэндвич-панели: цена с листа «Панели МП» (калькулятор поставщика) ----------
+// ---------- Сэндвич-панели: цена с листа «Панели <город завода>» (калькулятор поставщика) ----------
+/** Заводы-поставщики: [город, широта, долгота]. Тот же список — в site/kp/panels.js (PANEL_FACTORIES).
+ *  Прайс завода — лист «Панели <город>» (формат как у «Панели МП»). Пока листа нет — берётся «Панели МП». */
+const FACTORIES = [
+  ['Москва', 55.754, 37.620],
+  ['Санкт-Петербург', 59.939, 30.316],
+  ['Липецк', 52.603, 39.571],
+  ['Новосибирск', 55.028, 82.921]
+];
+/** Дорожное расстояние ≈ по прямой × 1,25, округлено до 10 км. */
+function km_(lat1, lon1, lat2, lon2) {
+  const r = Math.PI / 180, dl = (lat2 - lat1) * r, dn = (lon2 - lon1) * r;
+  const h = Math.pow(Math.sin(dl / 2), 2) + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.pow(Math.sin(dn / 2), 2);
+  return Math.round(6371 * 2 * Math.asin(Math.sqrt(h)) * 1.25 / 10) * 10;
+}
+/** Ближайший к объекту завод и лист с его прайсом. */
+function factory_(geo) {
+  const lat = Number(geo && geo.lat), lon = Number(geo && geo.lon);
+  if (!isFinite(lat) || !isFinite(lon) || !lat || !lon) return null;
+  const f = FACTORIES.map(x => ({ city: x[0], km: km_(lat, lon, x[1], x[2]) })).sort((a, b) => a.km - b.km)[0];
+  const ss = SpreadsheetApp.getActive();
+  f.sheet = ss.getSheetByName('Панели ' + f.city) ? 'Панели ' + f.city : 'Панели МП';
+  f.to = String(geo.city || '').slice(0, 60);
+  return f;
+}
 /** Таблица поставщика: ключ → [база ₽/м², название цвета], надбавка владельца и наценка за объём. */
-function panelTable_() {
-  const sh = SpreadsheetApp.getActive().getSheetByName('Панели МП');
-  if (!sh) throw new Error('нет листа «Панели МП»');
+function panelTable_(name) {
+  const sh = SpreadsheetApp.getActive().getSheetByName(name || 'Панели МП');
+  if (!sh) throw new Error('нет листа «' + (name || 'Панели МП') + '»');
   const last = sh.getLastRow();
   const v = sh.getRange(5, 1, last - 4, 11).getValues();     // A..K
   const base = {};
@@ -293,7 +318,8 @@ function calcPanel_(p) {
   const pick = (k, x, d) => { const v = field_(k, x); return v === undefined ? d : v; };
   const mTop = pick('mTop', p.mTop, 0.45), mBot = pick('mBot', p.mBot, 0.45), ral = pick('ral', p.ral, 7024);
   const mont = p.mont === '1', deliv = p.deliv === '1', vat = vat_(p);
-  const t = panelTable_();
+  const fac = factory_(p.geo);
+  const t = panelTable_(fac ? fac.sheet : 'Панели МП');
   const panels = [];
   [['wall', 'Стеновые'], ['roof', 'Кровельные']].forEach(([k, name]) => {
     const q = p[k];
@@ -322,18 +348,30 @@ function calcPanel_(p) {
       items.push(['Расходники для монтажа (герметик, саморезы, лента)', total, 'м²', pr('Расходники')]);
     }
     const trips = deliv ? Math.ceil(total / perTruck) : 0;
-    if (deliv) items.push(['Доставка сэндвич-панелей', trips, 'рейс', pr('Доставка сэндвич-панелей')]);
+    const excluded = ['фасонные элементы — по спецификации', 'разгрузка на объекте'];
+    // Доставка: ставка ₽/км с листа «График» (строка «Доставка панелей, ₽ за км»), но не меньше цены рейса из «Сметы».
+    // Если ставки нет — цена рейса из «Сметы» до 300 км, дальше доставку считает менеджер.
+    let tripPrice = pr('Доставка сэндвич-панелей'), delivNote = '';
+    if (deliv && fac) {
+      const rate = nextTo_('График', 'Доставка панелей, ₽ за км', 0);
+      if (rate > 0) tripPrice = Math.max(tripPrice, fac.km * rate * k);
+      else if (fac.km > 300) { tripPrice = 0; delivNote = 'доставка с завода в г. ' + fac.city + ' до г. ' + fac.to + ' (около ' + fac.km + ' км, ' + trips + ' ' + plural_(trips, 'рейс', 'рейса', 'рейсов') + ') — рассчитаем отдельно'; }
+    }
+    if (deliv && tripPrice) items.push(['Доставка сэндвич-панелей' + (fac ? ' из г. ' + fac.city + (fac.to ? ' в г. ' + fac.to : '') : ''), trips, 'рейс', tripPrice]);
+    if (delivNote) excluded.unshift(delivNote);
     const mm = x => String(x).replace('.', ',') + ' мм';
     const params = [];
     panels.forEach(x => params.push([x.kind + ' панели', x.core + ', ' + x.thk + ' мм, ' + x.area + ' м²']));
+    if (fac) params.push(['Завод-поставщик', fac.city + (fac.to && fac.km >= 30 ? ' (около ' + fac.km + ' км до г. ' + fac.to + ')' : '')]);
     params.push(['Металл снаружи / внутри', mm(mTop) + ' / ' + mm(mBot)], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
       ['Площадь всего', total + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]);
     return finish_({
       kind: 'Сэндвич-панели', area: 0, items: items, panels: panels, mont: mont, trips: trips, panelArea: total,
       title: panels.map(x => x.kind.toLowerCase() + ' ' + x.thk + ' мм — ' + x.area + ' м²').join(', ').replace(/^./, c => c.toUpperCase()),
       params: params,
-      notes: ['Цена панелей — по прайсу поставщика с учётом объёма заказа. Цвет изнутри — RAL 9003.'], vatOf: [sh, rows],
-      excluded: ['фасонные элементы — по спецификации', 'разгрузка на объекте']
+      factory: fac ? { city: fac.city, km: fac.km, to: fac.to } : null,
+      notes: ['Цена панелей — по прайсу завода' + (fac ? ' в г. ' + fac.city : '') + ' с учётом объёма заказа. Цвет изнутри — RAL 9003.'], vatOf: [sh, rows],
+      excluded: excluded
     });
   });
 }

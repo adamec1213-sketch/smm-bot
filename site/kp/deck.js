@@ -295,9 +295,10 @@ function renderDeck(r, client, no, days, C) {
       (r.panels.length === 1 ? '<div class="d-pc ph"><img src="' + A + 'bc-fasad-s.jpg" alt=""></div>' : '') +
       '<div class="d-pc dark"><small>ИТОГО ' + esc(VL) + '</small><b class="big">' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b><dl>' +
       '<dt>Панелей</dt><dd>' + nf(r.panelArea || 0) + ' м²</dd><dt>Средняя цена</dt><dd>' + rub(r.total / (r.panelArea || 1)) + ' за м²</dd>' +
-      '<dt>Монтаж</dt><dd>' + (r.mont ? 'включён' : 'только поставка') + '</dd><dt>Доставка</dt><dd>' + (r.trips ? nf(r.trips) + ' ' + (r.trips % 10 === 1 && r.trips % 100 !== 11 ? 'рейс' : [2,3,4].includes(r.trips % 10) && ![12,13,14].includes(r.trips % 100) ? 'рейса' : 'рейсов') : 'самовывоз') + '</dd>' +
+      (r.factory ? '<dt>Завод</dt><dd>' + esc(r.factory.city) + (r.factory.km >= 30 ? ', ~' + nf(r.factory.km) + ' км' : '') + '</dd>' : '') +
+      '<dt>Монтаж</dt><dd>' + (r.mont ? 'включён' : 'только поставка') + '</dd><dt>Доставка</dt><dd>' + (r.trips && !r.items.some(i => /^Доставка/.test(i[0])) ? 'считаем отдельно' : r.trips ? nf(r.trips) + ' ' + (r.trips % 10 === 1 && r.trips % 100 !== 11 ? 'рейс' : [2,3,4].includes(r.trips % 10) && ![12,13,14].includes(r.trips % 100) ? 'рейса' : 'рейсов') : 'самовывоз') + '</dd>' +
       (withVat ? '<dt>В т. ч. НДС</dt><dd>' + rub(vatSum) + '</dd>' : '<dt>НДС</dt><dd>не включён</dd>') + '</dl></div></div>' +
-      '<p class="d-note">Цена панелей — по прайсу поставщика на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
+      '<p class="d-note">Цена панелей — по прайсу ' + (r.factory ? 'завода в г. ' + esc(r.factory.city) : 'поставщика') + ' на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
   } else {
   S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
       '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +

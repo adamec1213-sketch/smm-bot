@@ -490,7 +490,7 @@ PAGES = [
     dict(path='kp/', body=kp, no_fab=True, title='Калькулятор стоимости ангара — КП за 2 минуты | РСК Групп',
          desc='Рассчитайте стоимость ангара, сэндвич-панелей или металлоконструкций и сразу получите коммерческое предложение с разбивкой по позициям.',
          head=f'<style>\n{read("calc.css")}\n{read("deck.css")}</style>\n',
-         foot=f'<script>\n{read("config.js")}\n</script>\n<script>\n{read("panels.js")}</script>\n<script>\n{read("deck.js")}</script>\n<script>\n{read("calc.js")}</script>'),
+         foot=f'<script>\n{read("config.js")}\n</script>\n<script>\n{read("panels.js")}</script>\n<script>\n{read("cities.js")}</script>\n<script>\n{read("deck.js")}</script>\n<script>\n{read("calc.js")}</script>'),
     dict(path='politika/', body=politika, title='Политика обработки персональных данных — РСК Групп',
          desc='Как РСК Групп обрабатывает персональные данные посетителей сайта.'),
     dict(path='', file='404.html', abs=True, noindex=True, body=notfound, title='Страница не найдена — РСК Групп',

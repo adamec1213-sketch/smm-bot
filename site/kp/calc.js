@@ -39,12 +39,56 @@ function panelOpts(){
   if (!$('a_ral').children.length) opts($('a_ral'), PANEL_OPTS.colors.map(c => c[0]), 7024, v => 'RAL ' + v + ' — ' + ralName(v));
 }
 
+// ---------- Город объекта: все города России, ближайший завод панелей ----------
+const cityIn = $('c_city'), cityList = $('c_city_list');
+const cnorm = x => String(x).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+const cityLabel = c => c[0] + (c[1] ? ', ' + c[1] : '');
+let cityPick = null, cityHits = [], cityAct = -1;
+// Дорожное расстояние ≈ расстояние по прямой × 1,25
+function kmTo(a, b){ const r = Math.PI/180, dl = (b[1]-a[1])*r, dn = (b[2]-a[2])*r;
+  const h = Math.sin(dl/2)**2 + Math.cos(a[1]*r)*Math.cos(b[1]*r)*Math.sin(dn/2)**2;
+  return Math.round(6371 * 2 * Math.asin(Math.sqrt(h)) * 1.25 / 10) * 10; }
+function nearestFactory(c){ return PANEL_FACTORIES.map(f => [f[0], kmTo([0, c[2], c[3]], f)]).sort((x, y) => x[1] - y[1])[0]; }
+function cityHint(){
+  const h = $('c_city_hint');
+  if (!cityPick) { h.textContent = 'Выберите город из списка. Если объект в посёлке, укажите ближайший город.'; return; }
+  if (tab !== 'panel') { h.textContent = cityLabel(cityPick); return; }
+  const f = nearestFactory(cityPick);
+  h.textContent = 'Ближайший завод-поставщик: ' + f[0] + (f[1] >= 30 ? ', около ' + fmt(f[1]) + ' км до объекта' : '') + '.';
+}
+function cityDraw(){
+  cityList.innerHTML = cityHits.map((c, k) => '<li role="option" data-k="'+k+'"'+(k===cityAct?' class="on"':'')+'>'+esc(c[0])+(c[1]?'<small>'+esc(c[1])+'</small>':'')+'</li>').join('');
+  cityList.hidden = !cityHits.length; cityIn.setAttribute('aria-expanded', String(!!cityHits.length));
+}
+function cityFind(){
+  const q = cnorm(cityIn.value);
+  cityPick = RU_CITIES.find(c => cnorm(cityLabel(c)) === q) || null;
+  const same = RU_CITIES.filter(c => cnorm(c[0]) === q);
+  if (!cityPick && same.length === 1) cityPick = same[0];
+  cityHits = q.length < 2 || (cityPick && same.length <= 1 && cnorm(cityLabel(cityPick)) === q) ? [] :
+    RU_CITIES.filter(c => cnorm(c[0]).startsWith(q)).concat(RU_CITIES.filter(c => !cnorm(c[0]).startsWith(q) && cnorm(c[0]).includes(q))).slice(0, 8);
+  cityAct = -1; cityDraw(); cityHint();
+  if (cityPick) cityIn.classList.remove('bad');
+}
+function cityChoose(c){ cityIn.value = cityLabel(c); cityPick = c; cityHits = []; cityDraw(); cityHint(); cityIn.classList.remove('bad'); }
+cityIn.addEventListener('input', cityFind);
+cityIn.addEventListener('focus', () => { if (!cityPick) cityFind(); });
+cityIn.addEventListener('blur', () => setTimeout(() => { cityHits = []; cityDraw(); }, 150));
+cityIn.addEventListener('keydown', e => {
+  if (!cityHits.length) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); cityAct = (cityAct + (e.key === 'ArrowDown' ? 1 : -1) + cityHits.length) % cityHits.length; cityDraw(); }
+  else if (e.key === 'Enter') { e.preventDefault(); cityChoose(cityHits[Math.max(0, cityAct)]); }
+  else if (e.key === 'Escape') { cityHits = []; cityDraw(); }
+});
+cityList.addEventListener('mousedown', e => { const li = e.target.closest('li'); if (li) { e.preventDefault(); cityChoose(cityHits[+li.dataset.k]); } });
+
 // ---------- Вкладки и подсказки ----------
 let tab = 'angar';
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
   tab = b.dataset.t;
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('[data-pane]').forEach(x => x.classList.toggle('hidden', x.dataset.pane !== tab));
+  cityHint();
 }));
 function hints(){
   const L = num('a_len'), W = num('a_wid');
@@ -74,7 +118,8 @@ function params(){
     const w = blk('wall'), rf = blk('roof'), first = w.on === '1' ? ['wall', w] : ['roof', rf];
     // type/core/thk/width/area — старый формат, на случай если в таблице ещё прежний код
     return { wall: w, roof: rf, type: first[0], core: first[1].core, thk: first[1].thk, width: first[1].width, area: first[1].area,
-      mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat') };
+      mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat'),
+      geo: cityPick ? { city: cityPick[0], region: cityPick[1], lat: cityPick[2], lon: cityPick[3] } : null };
   }
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
@@ -88,6 +133,7 @@ function check(p){
     const on = ['wall','roof'].filter(k => p[k].on === '1');
     if (!on.length) return 'Выберите стеновые или кровельные панели.';
     if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
+    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят завод-поставщик и доставка.'; }
   }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }
