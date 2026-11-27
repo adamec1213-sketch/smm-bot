@@ -288,17 +288,16 @@ function renderDeck(r, client, no, days, C) {
     const mmx = x => String(x).replace('.', ',') + ' мм';
     const pc = x => { const h = hex(x.ral); return '<div class="d-pc"><i class="sw" style="background:' + h[2] + '"></i><small>' + esc(x.kind.toUpperCase()) + ' ПАНЕЛИ</small>' +
       '<b class="big">' + nf(x.area) + ' м²</b><dl><dt>Утеплитель</dt><dd>' + esc(x.core) + '</dd><dt>Толщина</dt><dd>' + nf(x.thk) + ' мм</dd>' +
-      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + (x.mTop ? mmx(x.mTop) + ' / ' + mmx(x.mBot) : 'стандарт завода') + '</dd>' +
+      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + (x.mTop ? mmx(x.mTop) + ' / ' + mmx(x.mBot) : 'уточним при заказе') + '</dd>' +
       '<dt>Цвет</dt><dd>RAL ' + esc(x.ral) + (h[1] ? ', ' + esc(h[1].toLowerCase()) : '') + '</dd></dl>' +
       '<div class="pr"><span>Цена за м²</span><b>' + rub(x.price) + '</b></div><div class="pr"><span>Сумма</span><b>' + rub(x.price * x.area) + '</b></div></div>'; };
     S.push(head('Ваш заказ') + '<div class="d-ord">' + r.panels.map(pc).join('') +
       (r.panels.length === 1 ? '<div class="d-pc ph"><img src="' + A + 'bc-fasad-s.jpg" alt=""></div>' : '') +
       '<div class="d-pc dark"><small>ИТОГО ' + esc(VL) + '</small><b class="big">' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b><dl>' +
       '<dt>Панелей</dt><dd>' + nf(r.panelArea || 0) + ' м²</dd><dt>Средняя цена</dt><dd>' + rub(r.total / (r.panelArea || 1)) + ' за м²</dd>' +
-      (r.factory ? '<dt>Завод</dt><dd>' + esc(r.factory.city) + (r.factory.km >= 30 ? ', ~' + nf(r.factory.km) + ' км' : '') + '</dd>' : '') +
       '<dt>Монтаж</dt><dd>' + (r.mont ? 'включён' : 'только поставка') + '</dd><dt>Доставка</dt><dd>' + (r.trips && !r.items.some(i => /^Доставка/.test(i[0])) ? 'считаем отдельно' : r.trips ? nf(r.trips) + ' ' + (r.trips % 10 === 1 && r.trips % 100 !== 11 ? 'рейс' : [2,3,4].includes(r.trips % 10) && ![12,13,14].includes(r.trips % 100) ? 'рейса' : 'рейсов') : 'самовывоз') + '</dd>' +
       (withVat ? '<dt>В т. ч. НДС</dt><dd>' + rub(vatSum) + '</dd>' : '<dt>НДС</dt><dd>не включён</dd>') + '</dl></div></div>' +
-      '<p class="d-note">Цена панелей — по прайсу ' + (r.factory ? 'завода в г. ' + esc(r.factory.city) : 'поставщика') + ' на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
+      '<p class="d-note">Цена панелей — на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
   } else {
   S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
       '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +

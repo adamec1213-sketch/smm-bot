@@ -361,7 +361,7 @@ def paneli(up, I):
 </div></section>
 
 <section class="s"><div class="in">
-  <div class="head-row"><div><span class="kicker">Поставка и монтаж</span><h2>От завода <em>до готовой стены</em></h2></div></div>
+  <div class="head-row"><div><span class="kicker">Поставка и монтаж</span><h2>От поставки <em>до готовой стены</em></h2></div></div>
   <div class="grid3">
     <div class="tile"><div class="ic">{I['truck']}</div><h3>Доставка</h3><p>Привозим фурами на объект, в одну машину помещается около 250 м² панелей. Разгрузка автокраном.</p></div>
     <div class="tile"><div class="ic">{I['ceh']}</div><h3>Монтаж</h3><p>Своя бригада. В смету сразу входят расходники: герметик, саморезы, уплотнительная лента.</p></div>

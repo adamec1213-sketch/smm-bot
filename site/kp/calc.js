@@ -16,7 +16,7 @@ const opts = (sel, list, def, label) => { const cur = sel.value;
   sel.innerHTML = list.map(v => '<option value="'+v+'">'+(label ? label(v) : String(v).replace('.', ','))+'</option>').join('');
   sel.value = list.map(String).includes(cur) ? cur : String(def); };
 const ralName = c => (PANEL_OPTS.colors.find(x => x[0] == c) || [c, ''])[1];
-// Варианты панелей ближайшего завода (PANEL_FACTORY_OPTS), иначе — как у «МП»
+// Варианты панелей по площадке отгрузки (PANEL_FACTORY_OPTS), иначе — общие
 function panelSet(){
   const f = typeof cityPick !== 'undefined' && cityPick ? nearestFactory(cityPick)[0] : '';
   const o = PANEL_FACTORY_OPTS[f] || {};
@@ -38,7 +38,7 @@ function panelOpts(){
   opts($('p_wall_w'), O.widths.wall, 1000);
   $('p_metal_box').classList.toggle('hidden', !O.metal);
   $('p_metal_note').classList.toggle('hidden', !!O.metal);
-  $('p_metal_note').textContent = 'Металл — по стандарту завода' + (O.factory ? ' в г. ' + O.factory : '') + ', толщину уточним при звонке.';
+  $('p_metal_note').textContent = 'Толщину металла уточним при звонке.';
   if (O.metal) { opts($('p_mt'), O.metal, 0.45); opts($('p_mb'), O.metal, 0.45); }
   const rb = $('p_ral_box'), sig = O.colors.map(c => c[0]).join(',');
   if (rb.dataset.sig !== sig) {
@@ -55,7 +55,7 @@ function panelOpts(){
   if (!$('a_ral').children.length) opts($('a_ral'), PANEL_OPTS.colors.map(c => c[0]), 7024, v => 'RAL ' + v + ' — ' + ralName(v));
 }
 
-// ---------- Город объекта: все города России, ближайший завод панелей ----------
+// ---------- Город объекта: все города России ----------
 const cityIn = $('c_city'), cityList = $('c_city_list');
 const cnorm = x => String(x).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
 const cityLabel = c => c[0] + (c[1] ? ', ' + c[1] : '');
@@ -71,8 +71,7 @@ function cityHint(){
   if (!cityPick) { h.textContent = 'Выберите город из списка. Если объект в посёлке, укажите ближайший город.'; return; }
   if (tab !== 'panel') { h.textContent = cityLabel(cityPick); return; }
   const f = nearestFactory(cityPick);
-  h.textContent = f[0] === cityPick[0] ? 'Завод-поставщик в вашем городе: доставка по городу войдёт в расчёт.'
-    : 'Ближайший завод-поставщик: ' + f[0] + ', около ' + fmt(f[1]) + ' км до объекта. Доставку до вашего города рассчитаем отдельно.';
+  h.textContent = f[0] === cityPick[0] ? 'Доставка по городу войдёт в расчёт.' : 'Доставку до объекта рассчитаем отдельно.';
 }
 function cityDraw(){
   cityList.innerHTML = cityHits.map((c, k) => '<li role="option" data-k="'+k+'"'+(k===cityAct?' class="on"':'')+'>'+esc(c[0])+(c[1]?'<small>'+esc(c[1])+'</small>':'')+'</li>').join('');
@@ -151,7 +150,7 @@ function check(p){
     const on = ['wall','roof'].filter(k => p[k].on === '1');
     if (!on.length) return 'Выберите стеновые или кровельные панели.';
     if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
-    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят завод-поставщик и доставка.'; }
+    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
   }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }

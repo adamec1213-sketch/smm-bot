@@ -492,7 +492,7 @@ input.bad{border-color:var(--err)}
 
   <section class="card">
     <h2>Где объект</h2>
-    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Липецк»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
+    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Казань»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
     <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
   </section>
 
@@ -513,7 +513,7 @@ input.bad{border-color:var(--err)}
 
   <section class="card">
     <h2>Стены и кровля</h2>
-    <div class="hint" style="margin:-6px 0 14px">Сэндвич-панели: утеплитель, толщина и цвет — по прайсу поставщика</div>
+    <div class="hint" style="margin:-6px 0 14px">Сэндвич-панели: утеплитель, толщина и цвет — на выбор</div>
     <div class="grid">
       <div><label class="f">Утеплитель панелей</label><select id="a_core"><option value="минвата">Минвата (не горит)</option><option value="пенопласт">Пенопласт</option><option value="КОМБИ">КОМБИ</option></select></div>
       <div><label class="f">Цвет панелей (RAL)</label><select id="a_ral"></select></div>
@@ -598,7 +598,7 @@ input.bad{border-color:var(--err)}
         <label><input type="radio" name="p_deliv" value="0"><span>Самовывоз</span></label>
       </div>
     </div>
-    <div class="hint">Цена — по прайсу поставщика с учётом объёма: чем больше площадь, тем ниже цена за м². Цвет изнутри — RAL 9003 (белый).</div>
+    <div class="hint">Цена зависит от объёма: чем больше площадь, тем ниже цена за м². Цвет изнутри — RAL 9003 (белый).</div>
   </section>
 
   <!-- ===== МЕТАЛЛОКОНСТРУКЦИИ ===== -->
@@ -711,7 +711,7 @@ const COMPANY = {
 
 </script>
 <script>
-// Варианты сэндвич-панелей поставщика «МП» (лист «Панели МП» калькулятора владельца).
+// Варианты сэндвич-панелей (без цен).
 // Только списки для выбора — без цен. Цену считает таблица.
 const PANEL_OPTS = {
   cores: { wall: ['минвата', 'пенопласт', 'КОМБИ'], roof: ['минвата', 'пенопласт', 'КОМБИ'] },
@@ -732,8 +732,7 @@ const PANEL_OPTS = {
   coreNote: { 'минвата': 'не горит: для складов, цехов, автосервисов', 'пенопласт': 'легче и дешевле минваты, но горючий', 'КОМБИ': 'комбинированный утеплитель: состав уточним при звонке' }
 };
 
-// Заводы-поставщики панелей: [город, широта, долгота]. Такой же список — в kp/apps-script.gs (FACTORIES).
-// Цены каждого завода — на листе «Панели <город>» в таблице владельца.
+// Площадки отгрузки: [город, широта, долгота]. Такой же список — в kp/apps-script.gs (FACTORIES).
 const PANEL_FACTORIES = [
   ['Москва', 55.754, 37.620],
   ['Санкт-Петербург', 59.939, 30.316],
@@ -741,8 +740,8 @@ const PANEL_FACTORIES = [
   ['Новосибирск', 55.028, 82.921]
 ];
 
-// Что делает каждый завод (только списки, без цен). Завода нет в списке — варианты как у «МП» (PANEL_OPTS).
-// metal: null — толщину металла выбрать нельзя, в КП «по стандарту завода».
+// Варианты по площадке отгрузки (без цен). Нет в списке — общие варианты PANEL_OPTS.
+// metal: null — толщину металла не выбирают, уточняем при звонке.
 const PANEL_FACTORY_OPTS = {
   'Липецк': {
     cores: { wall: ['минвата', 'пенопласт'], roof: ['минвата', 'пенопласт'] },
@@ -1053,17 +1052,16 @@ function renderDeck(r, client, no, days, C) {
     const mmx = x => String(x).replace('.', ',') + ' мм';
     const pc = x => { const h = hex(x.ral); return '<div class="d-pc"><i class="sw" style="background:' + h[2] + '"></i><small>' + esc(x.kind.toUpperCase()) + ' ПАНЕЛИ</small>' +
       '<b class="big">' + nf(x.area) + ' м²</b><dl><dt>Утеплитель</dt><dd>' + esc(x.core) + '</dd><dt>Толщина</dt><dd>' + nf(x.thk) + ' мм</dd>' +
-      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + (x.mTop ? mmx(x.mTop) + ' / ' + mmx(x.mBot) : 'стандарт завода') + '</dd>' +
+      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + (x.mTop ? mmx(x.mTop) + ' / ' + mmx(x.mBot) : 'уточним при заказе') + '</dd>' +
       '<dt>Цвет</dt><dd>RAL ' + esc(x.ral) + (h[1] ? ', ' + esc(h[1].toLowerCase()) : '') + '</dd></dl>' +
       '<div class="pr"><span>Цена за м²</span><b>' + rub(x.price) + '</b></div><div class="pr"><span>Сумма</span><b>' + rub(x.price * x.area) + '</b></div></div>'; };
     S.push(head('Ваш заказ') + '<div class="d-ord">' + r.panels.map(pc).join('') +
       (r.panels.length === 1 ? '<div class="d-pc ph"><img src="' + A + 'bc-fasad-s.jpg" alt=""></div>' : '') +
       '<div class="d-pc dark"><small>ИТОГО ' + esc(VL) + '</small><b class="big">' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b><dl>' +
       '<dt>Панелей</dt><dd>' + nf(r.panelArea || 0) + ' м²</dd><dt>Средняя цена</dt><dd>' + rub(r.total / (r.panelArea || 1)) + ' за м²</dd>' +
-      (r.factory ? '<dt>Завод</dt><dd>' + esc(r.factory.city) + (r.factory.km >= 30 ? ', ~' + nf(r.factory.km) + ' км' : '') + '</dd>' : '') +
       '<dt>Монтаж</dt><dd>' + (r.mont ? 'включён' : 'только поставка') + '</dd><dt>Доставка</dt><dd>' + (r.trips && !r.items.some(i => /^Доставка/.test(i[0])) ? 'считаем отдельно' : r.trips ? nf(r.trips) + ' ' + (r.trips % 10 === 1 && r.trips % 100 !== 11 ? 'рейс' : [2,3,4].includes(r.trips % 10) && ![12,13,14].includes(r.trips % 100) ? 'рейса' : 'рейсов') : 'самовывоз') + '</dd>' +
       (withVat ? '<dt>В т. ч. НДС</dt><dd>' + rub(vatSum) + '</dd>' : '<dt>НДС</dt><dd>не включён</dd>') + '</dl></div></div>' +
-      '<p class="d-note">Цена панелей — по прайсу ' + (r.factory ? 'завода в г. ' + esc(r.factory.city) : 'поставщика') + ' на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
+      '<p class="d-note">Цена панелей — на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003 (белый).</p>');
   } else {
   S.push(head('Предложение в цифрах') + '<div class="d-kpis">' + (withVat ? '<div><small>В ТОМ ЧИСЛЕ НДС ' + esc(vat) + '</small><b>' + rub(vatSum || 0) + '</b></div>' : '<div><small>НДС</small><b>не включён</b></div>') +
       '<div class="dark"><small>ИТОГО ' + esc(VL) + '</small><b>' + (r.total >= 1e6 ? mln(r.total) : rub(r.total)) + '</b></div>' +
@@ -1212,7 +1210,7 @@ const opts = (sel, list, def, label) => { const cur = sel.value;
   sel.innerHTML = list.map(v => '<option value="'+v+'">'+(label ? label(v) : String(v).replace('.', ','))+'</option>').join('');
   sel.value = list.map(String).includes(cur) ? cur : String(def); };
 const ralName = c => (PANEL_OPTS.colors.find(x => x[0] == c) || [c, ''])[1];
-// Варианты панелей ближайшего завода (PANEL_FACTORY_OPTS), иначе — как у «МП»
+// Варианты панелей по площадке отгрузки (PANEL_FACTORY_OPTS), иначе — общие
 function panelSet(){
   const f = typeof cityPick !== 'undefined' && cityPick ? nearestFactory(cityPick)[0] : '';
   const o = PANEL_FACTORY_OPTS[f] || {};
@@ -1234,7 +1232,7 @@ function panelOpts(){
   opts($('p_wall_w'), O.widths.wall, 1000);
   $('p_metal_box').classList.toggle('hidden', !O.metal);
   $('p_metal_note').classList.toggle('hidden', !!O.metal);
-  $('p_metal_note').textContent = 'Металл — по стандарту завода' + (O.factory ? ' в г. ' + O.factory : '') + ', толщину уточним при звонке.';
+  $('p_metal_note').textContent = 'Толщину металла уточним при звонке.';
   if (O.metal) { opts($('p_mt'), O.metal, 0.45); opts($('p_mb'), O.metal, 0.45); }
   const rb = $('p_ral_box'), sig = O.colors.map(c => c[0]).join(',');
   if (rb.dataset.sig !== sig) {
@@ -1251,7 +1249,7 @@ function panelOpts(){
   if (!$('a_ral').children.length) opts($('a_ral'), PANEL_OPTS.colors.map(c => c[0]), 7024, v => 'RAL ' + v + ' — ' + ralName(v));
 }
 
-// ---------- Город объекта: все города России, ближайший завод панелей ----------
+// ---------- Город объекта: все города России ----------
 const cityIn = $('c_city'), cityList = $('c_city_list');
 const cnorm = x => String(x).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
 const cityLabel = c => c[0] + (c[1] ? ', ' + c[1] : '');
@@ -1267,8 +1265,7 @@ function cityHint(){
   if (!cityPick) { h.textContent = 'Выберите город из списка. Если объект в посёлке, укажите ближайший город.'; return; }
   if (tab !== 'panel') { h.textContent = cityLabel(cityPick); return; }
   const f = nearestFactory(cityPick);
-  h.textContent = f[0] === cityPick[0] ? 'Завод-поставщик в вашем городе: доставка по городу войдёт в расчёт.'
-    : 'Ближайший завод-поставщик: ' + f[0] + ', около ' + fmt(f[1]) + ' км до объекта. Доставку до вашего города рассчитаем отдельно.';
+  h.textContent = f[0] === cityPick[0] ? 'Доставка по городу войдёт в расчёт.' : 'Доставку до объекта рассчитаем отдельно.';
 }
 function cityDraw(){
   cityList.innerHTML = cityHits.map((c, k) => '<li role="option" data-k="'+k+'"'+(k===cityAct?' class="on"':'')+'>'+esc(c[0])+(c[1]?'<small>'+esc(c[1])+'</small>':'')+'</li>').join('');
@@ -1347,7 +1344,7 @@ function check(p){
     const on = ['wall','roof'].filter(k => p[k].on === '1');
     if (!on.length) return 'Выберите стеновые или кровельные панели.';
     if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
-    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят завод-поставщик и доставка.'; }
+    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
   }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }

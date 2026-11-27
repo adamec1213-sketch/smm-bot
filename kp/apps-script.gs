@@ -373,7 +373,7 @@ function calcPanel_(p) {
     const w = roof ? 1000 : pick('wallW', q.width, 1000);
     const thk = pick(roof ? 'roofThk' : 'wallThk', q.thk, roof ? 150 : 100);
     const pp = panelPrice_(t, { roof: roof, core: core, w: w, thk: thk, mTop: mTop, mBot: mBot, ral: ral }, A, vat);
-    if (!pp) throw new Error('нет такой панели у ' + (fac ? 'завода в г. ' + fac.city : 'поставщика') + ': ' + [name, core, w, thk, mTop, mBot, 'RAL ' + ral].join(' | '));
+    if (!pp) throw new Error('нет такой панели: ' + [name, core, w, thk, mTop, mBot, 'RAL ' + ral].join(' | '));
     const mt = t.fmt === 'factory' ? (t.metal || [0, 0]) : [mTop, mBot];
     panels.push({ kind: name, core: core, thk: thk, width: w, mTop: mt[0], mBot: mt[1], ral: ral, color: pp.color, area: A, price: pp.price });
   });
@@ -395,22 +395,21 @@ function calcPanel_(p) {
     let tripPrice = pr('Доставка сэндвич-панелей'), delivNote = '';
     if (deliv && fac && fac.to !== fac.city) {
       tripPrice = 0;
-      delivNote = 'доставка с завода в г. ' + fac.city + ' до г. ' + fac.to + ' (около ' + fac.km + ' км, ' + trips + ' ' + plural_(trips, 'рейс', 'рейса', 'рейсов') + ') — рассчитаем отдельно';
+      delivNote = 'доставка до г. ' + fac.to + ' (' + trips + ' ' + plural_(trips, 'рейс', 'рейса', 'рейсов') + ') — рассчитаем отдельно';
     }
-    if (deliv && tripPrice) items.push(['Доставка сэндвич-панелей' + (fac ? ' по г. ' + fac.city : ''), trips, 'рейс', tripPrice]);
+    if (deliv && tripPrice) items.push(['Доставка сэндвич-панелей' + (fac && fac.to ? ' по г. ' + fac.to : ''), trips, 'рейс', tripPrice]);
     if (delivNote) excluded.unshift(delivNote);
     const mm = x => String(x).replace('.', ',') + ' мм';
     const params = [];
     panels.forEach(x => params.push([x.kind + ' панели', x.core + ', ' + x.thk + ' мм, ' + x.area + ' м²']));
-    if (fac) params.push(['Завод-поставщик', fac.city + (fac.to && fac.km >= 30 ? ' (около ' + fac.km + ' км до г. ' + fac.to + ')' : '')]);
-    params.push(['Металл снаружи / внутри', panels[0].mTop ? mm(panels[0].mTop) + ' / ' + mm(panels[0].mBot) : 'по стандарту завода'], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
+    params.push(['Металл снаружи / внутри', panels[0].mTop ? mm(panels[0].mTop) + ' / ' + mm(panels[0].mBot) : 'уточним при заказе'], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
       ['Площадь всего', total + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]);
     return finish_({
       kind: 'Сэндвич-панели', area: 0, items: items, panels: panels, mont: mont, trips: trips, panelArea: total,
       title: panels.map(x => x.kind.toLowerCase() + ' ' + x.thk + ' мм — ' + x.area + ' м²').join(', ').replace(/^./, c => c.toUpperCase()),
       params: params,
-      factory: fac ? { city: fac.city, km: fac.km, to: fac.to } : null,
-      notes: ['Цена панелей — по прайсу завода' + (fac ? ' в г. ' + fac.city : '') + ' с учётом объёма заказа. Цвет изнутри — RAL 9003.'], vatOf: [sh, rows],
+      supplier: fac ? fac.city + ' (' + fac.sheet + '), ~' + fac.km + ' км до объекта' : '',   // только для владельца: в ответ сайту не уходит
+      notes: ['Цена панелей — на дату расчёта, с учётом объёма заказа. Цвет изнутри — RAL 9003.'], vatOf: [sh, rows],
       excluded: excluded
     });
   });
@@ -458,7 +457,7 @@ function finish_(r) {
 function kpText_(r) {
   return r.kind + ': ' + r.title + '\n' + r.params.map(p => p[0] + ': ' + p[1]).join('; ') + '\n' +
     r.items.map((i, n) => (n + 1) + '. ' + i[0] + ' — ' + i[1] + ' ' + i[2] + ' × ' + rub_(i[3]) + ' = ' + rub_(i[4])).join('\n') +
-    '\nИТОГО: ' + rub_(r.total) + (r.area ? ' (~' + rub_(r.total / r.area) + '/м²)' : '') + '. ' + r.notes.join(' ');
+    (r.supplier ? '\nЗавод (видно только вам): ' + r.supplier : '') + '\nИТОГО: ' + rub_(r.total) + (r.area ? ' (~' + rub_(r.total / r.area) + '/м²)' : '') + '. ' + r.notes.join(' ');
 }
 function kpNumber_() {
   return Utilities.formatDate(new Date(), 'Europe/Moscow', 'yyMMdd-HHmm') + '-' + Math.floor(10 + Math.random() * 90);
@@ -501,6 +500,6 @@ function doPost(e) {
     } catch (err) { /* лимит писем — заявка всё равно в таблице */ }
   }
   r.notes = r.notes.filter(String);
-  delete r.missing;
+  delete r.missing; delete r.supplier;   // завод-изготовитель клиенту не показываем
   return json_({ ok: true, kp: no, days: KP_DAYS, result: r });
 }
