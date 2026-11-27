@@ -284,6 +284,8 @@ function factory_(geo) {
 function panelTable_(name) {
   const sh = SpreadsheetApp.getActive().getSheetByName(name || 'Панели МП');
   if (!sh) throw new Error('нет листа «' + (name || 'Панели МП') + '»');
+  const ft = factoryTable_(sh);
+  if (ft) return ft;
   const last = sh.getLastRow();
   const v = sh.getRange(5, 1, last - 4, 11).getValues();     // A..K
   const base = {};
@@ -298,16 +300,56 @@ function panelTable_(name) {
     else if (inTiers && r[0] === '') inTiers = tiers.length === 0;
   });
   tiers.sort((x, y) => x[0] - y[0]);
-  return { base: base, add: add, tiers: tiers };
+  return { fmt: 'mp', base: base, add: add, tiers: tiers };
 }
-/** Как в «Справочнике»: (база + наценка за объём + надбавка) × (без НДС → ÷ 1,22). До 50 м² — 60 000 ₽ на заказ. */
-function panelPrice_(t, key, area, vat) {
-  const b = t.base[key];
+const RAL_NAMES = { 9003: 'Сигнальный белый', 9002: 'Серо-белый', 9006: 'Серебристый металлик', 1014: 'Слоновая кость',
+  1015: 'Светло-слоновая кость', 5005: 'Сигнальный синий', 7004: 'Сигнальный серый', 7035: 'Туманно-серый',
+  6005: 'Зелёный мох', 8017: 'Шоколадно-коричневый', 7024: 'Серый графит' };
+/** Прайс завода в простом формате (лист «Панели <город>»):
+ *  сверху настройки «подпись | значение», ниже шапка «Тип | Утеплитель | Толщина, мм | от 100 м² | от 200 м² | …» и строки цен ₽/м².
+ *  Возвращает null, если лист в формате «Панели МП». */
+function factoryTable_(sh) {
+  const v = sh.getDataRange().getValues();
+  const set = {}; let hdr = -1;
+  v.forEach((r, i) => {
+    const k = String(r[0]).trim();
+    if (hdr >= 0 || !k) return;
+    if (k === 'Тип') hdr = i; else set[k.toLowerCase()] = r[1];
+  });
+  if (hdr < 0) return null;
+  const g = (s, d) => { const k = Object.keys(set).find(x => x.indexOf(s) === 0); return k === undefined || set[k] === '' ? d : set[k]; };
+  const tiers = v[hdr].slice(3).map(x => num_(String(x).replace(/[^\d]/g, ''))).filter(x => x > 0);
+  const rows = {};
+  v.slice(hdr + 1).forEach(r => {
+    const t = String(r[0]).trim().toLowerCase(), c = String(r[1]).trim().toLowerCase();
+    if (!t || !num_(r[2])) return;
+    const core = c.indexOf('пено') === 0 ? 'пенопласт' : c.indexOf('мин') === 0 ? 'минвата' : c;
+    rows[(t.indexOf('кров') === 0 ? 'кровля' : 'стена') + '|' + core + '|' + num_(r[2])] = tiers.map((x, j) => num_(r[3 + j]));
+  });
+  const metal = String(g('металл', '')).split('/').map(x => num_(String(x).replace(',', '.'))).filter(x => x > 0);
+  return { fmt: 'factory', rows: rows, tiers: tiers, withVat: !/^нет/i.test(String(g('цены завода с ндс', 'да'))),
+    add: num_(g('надбавка владельца', 0)), small: num_(g('заказ до', 0)), metal: metal.length === 2 ? metal : null,
+    colors: String(g('цвета', '')).split(/[^\d]+/).filter(Boolean).map(Number) };
+}
+/** Цена ₽/м² панели. «Панели МП» — как в «Справочнике»: (база + наценка за объём + надбавка) × (без НДС → ÷ 1,22), до 50 м² — 60 000 ₽ на заказ.
+ *  Прайс завода: цена по колонке объёма (по площади этого типа панелей) + надбавка владельца; меньше первой колонки — плюс «Заказ до …» ÷ площадь. */
+function panelPrice_(t, x, area, vat) {
+  const v22 = vat === '22 %';
+  if (t.fmt === 'factory') {
+    const row = t.rows[(x.roof ? 'кровля' : 'стена') + '|' + x.core + '|' + x.thk];
+    if (!row || (t.colors.length && t.colors.indexOf(Number(x.ral)) < 0)) return null;
+    let j = 0; t.tiers.forEach((m, i) => { if (area >= m) j = i; });
+    if (!row[j]) return null;
+    const small = t.small && area < t.tiers[0] ? t.small / Math.max(1, area) : 0;
+    const f = t.withVat ? (v22 ? 1 : 1 / 1.22) : (v22 ? 1.22 : 1);
+    return { price: Math.round((row[j] + small + t.add) * f * 100) / 100, color: RAL_NAMES[x.ral] || '' };
+  }
+  const b = t.base[[x.roof ? 'кровля' : 'стена', x.core, x.w, x.thk, x.mTop, x.mBot, x.ral].join('|')];
   if (!b) return null;
   let vol = 0;
   if (area <= 50) vol = 60000 / Math.max(1, area);
-  else t.tiers.forEach(x => { if (area >= x[0]) vol = x[1]; });
-  return { price: Math.round((b[0] + vol + t.add) * (vat === '22 %' ? 1 : 1 / 1.22) * 100) / 100, color: b[1] };
+  else t.tiers.forEach(y => { if (area >= y[0]) vol = y[1]; });
+  return { price: Math.round((b[0] + vol + t.add) * (v22 ? 1 : 1 / 1.22) * 100) / 100, color: b[1] };
 }
 function calcPanel_(p) {
   // Старый формат (один тип): {type, core, thk, width, area}. Новый: {wall:{...}, roof:{...}} — стеновые и кровельные в одном КП.
@@ -330,10 +372,10 @@ function calcPanel_(p) {
     const core = pick(roof ? 'roofCore' : 'wallCore', q.core, 'минвата');
     const w = roof ? 1000 : pick('wallW', q.width, 1000);
     const thk = pick(roof ? 'roofThk' : 'wallThk', q.thk, roof ? 150 : 100);
-    const key = [roof ? 'кровля' : 'стена', core, w, thk, mTop, mBot, ral].join('|');
-    const pp = panelPrice_(t, key, A, vat);
-    if (!pp) throw new Error('нет такой панели у поставщика: ' + key);
-    panels.push({ kind: name, core: core, thk: thk, width: w, mTop: mTop, mBot: mBot, ral: ral, color: pp.color, area: A, price: pp.price });
+    const pp = panelPrice_(t, { roof: roof, core: core, w: w, thk: thk, mTop: mTop, mBot: mBot, ral: ral }, A, vat);
+    if (!pp) throw new Error('нет такой панели у ' + (fac ? 'завода в г. ' + fac.city : 'поставщика') + ': ' + [name, core, w, thk, mTop, mBot, 'RAL ' + ral].join(' | '));
+    const mt = t.fmt === 'factory' ? (t.metal || [0, 0]) : [mTop, mBot];
+    panels.push({ kind: name, core: core, thk: thk, width: w, mTop: mt[0], mBot: mt[1], ral: ral, color: pp.color, area: A, price: pp.price });
   });
   if (!panels.length) throw new Error('не указана площадь панелей (от 10 м²)');
   const total = panels.reduce((s, x) => s + x.area, 0);
@@ -361,7 +403,7 @@ function calcPanel_(p) {
     const params = [];
     panels.forEach(x => params.push([x.kind + ' панели', x.core + ', ' + x.thk + ' мм, ' + x.area + ' м²']));
     if (fac) params.push(['Завод-поставщик', fac.city + (fac.to && fac.km >= 30 ? ' (около ' + fac.km + ' км до г. ' + fac.to + ')' : '')]);
-    params.push(['Металл снаружи / внутри', mm(mTop) + ' / ' + mm(mBot)], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
+    params.push(['Металл снаружи / внутри', panels[0].mTop ? mm(panels[0].mTop) + ' / ' + mm(panels[0].mBot) : 'по стандарту завода'], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
       ['Площадь всего', total + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]);
     return finish_({
       kind: 'Сэндвич-панели', area: 0, items: items, panels: panels, mont: mont, trips: trips, panelArea: total,

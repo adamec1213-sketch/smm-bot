@@ -490,6 +490,12 @@ input.bad{border-color:var(--err)}
     <button class="tab" data-t="mk">Металло&shy;конструкции<small>производство</small></button>
   </div>
 
+  <section class="card">
+    <h2>Где объект</h2>
+    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Липецк»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
+    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
+  </section>
+
   <!-- ===== АНГАР (поля листа «Ввод») ===== -->
   <div data-pane="angar">
   <section class="card">
@@ -574,7 +580,8 @@ input.bad{border-color:var(--err)}
   </section>
   <section class="card hidden" data-pane="panel">
     <h2>Металл и цвет</h2>
-    <div class="grid">
+    <div class="hint hidden" id="p_metal_note" style="margin:0 0 4px"></div>
+    <div class="grid" id="p_metal_box">
       <div><label class="f">Металл снаружи, мм</label><select id="p_mt"></select></div>
       <div><label class="f">Металл внутри, мм</label><select id="p_mb"></select></div>
     </div>
@@ -636,12 +643,6 @@ input.bad{border-color:var(--err)}
   </section>
 
   <!-- ===== КОНТАКТЫ ===== -->
-  <section class="card">
-    <h2>Где объект</h2>
-    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Липецк»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
-    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
-  </section>
-
   <section class="card">
     <h2>НДС в цене</h2>
     <div class="seg" id="vat_box">
@@ -739,6 +740,22 @@ const PANEL_FACTORIES = [
   ['Липецк', 52.603, 39.571],
   ['Новосибирск', 55.028, 82.921]
 ];
+
+// Что делает каждый завод (только списки, без цен). Завода нет в списке — варианты как у «МП» (PANEL_OPTS).
+// metal: null — толщину металла выбрать нельзя, в КП «по стандарту завода».
+const PANEL_FACTORY_OPTS = {
+  'Липецк': {
+    cores: { wall: ['минвата', 'пенопласт'], roof: ['минвата', 'пенопласт'] },
+    thk: {
+      'wall|минвата': [50, 60, 80, 100, 120, 150, 200, 250],
+      'roof|минвата': [50, 60, 80, 100, 120, 150, 200, 250],
+      'wall|пенопласт': [50, 60, 80, 100, 120, 150, 200],
+      'roof|пенопласт': [60, 80, 100, 120, 150, 200]
+    },
+    colors: [7024, 9003, 1014, 1015, 5005, 7004, 6005, 8017],
+    metal: null
+  }
+};
 </script>
 <script>
 // Города России (1100+) с координатами: [название, регион, широта, долгота, население].
@@ -1036,7 +1053,7 @@ function renderDeck(r, client, no, days, C) {
     const mmx = x => String(x).replace('.', ',') + ' мм';
     const pc = x => { const h = hex(x.ral); return '<div class="d-pc"><i class="sw" style="background:' + h[2] + '"></i><small>' + esc(x.kind.toUpperCase()) + ' ПАНЕЛИ</small>' +
       '<b class="big">' + nf(x.area) + ' м²</b><dl><dt>Утеплитель</dt><dd>' + esc(x.core) + '</dd><dt>Толщина</dt><dd>' + nf(x.thk) + ' мм</dd>' +
-      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + mmx(x.mTop) + ' / ' + mmx(x.mBot) + '</dd>' +
+      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + (x.mTop ? mmx(x.mTop) + ' / ' + mmx(x.mBot) : 'стандарт завода') + '</dd>' +
       '<dt>Цвет</dt><dd>RAL ' + esc(x.ral) + (h[1] ? ', ' + esc(h[1].toLowerCase()) : '') + '</dd></dl>' +
       '<div class="pr"><span>Цена за м²</span><b>' + rub(x.price) + '</b></div><div class="pr"><span>Сумма</span><b>' + rub(x.price * x.area) + '</b></div></div>'; };
     S.push(head('Ваш заказ') + '<div class="d-ord">' + r.panels.map(pc).join('') +
@@ -1195,19 +1212,35 @@ const opts = (sel, list, def, label) => { const cur = sel.value;
   sel.innerHTML = list.map(v => '<option value="'+v+'">'+(label ? label(v) : String(v).replace('.', ','))+'</option>').join('');
   sel.value = list.map(String).includes(cur) ? cur : String(def); };
 const ralName = c => (PANEL_OPTS.colors.find(x => x[0] == c) || [c, ''])[1];
+// Варианты панелей ближайшего завода (PANEL_FACTORY_OPTS), иначе — как у «МП»
+function panelSet(){
+  const f = typeof cityPick !== 'undefined' && cityPick ? nearestFactory(cityPick)[0] : '';
+  const o = PANEL_FACTORY_OPTS[f] || {};
+  return { cores: o.cores || PANEL_OPTS.cores, widths: o.widths || PANEL_OPTS.widths, thk: o.thk || PANEL_OPTS.thk,
+    colors: o.colors ? o.colors.map(c => PANEL_OPTS.colors.find(x => x[0] === c)).filter(Boolean) : PANEL_OPTS.colors,
+    metal: 'metal' in o ? o.metal : PANEL_OPTS.metals, factory: f };
+}
 function panelOpts(){
+  const O = panelSet();
   ['wall','roof'].forEach(type => {
-    const box = $('p_'+type+'_core'), core = radio('p_'+type+'_core') || 'минвата';
-    box.innerHTML = PANEL_OPTS.cores[type].map(c => '<label><input type="radio" name="p_'+type+'_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
+    const box = $('p_'+type+'_core');
+    let core = radio('p_'+type+'_core') || 'минвата';
+    if (!O.cores[type].includes(core)) core = O.cores[type][0];
+    box.innerHTML = O.cores[type].map(c => '<label><input type="radio" name="p_'+type+'_core" value="'+c+'"'+(c===core?' checked':'')+'><span>'+c+'</span></label>').join('');
     box.querySelectorAll('input').forEach(e => e.addEventListener('change', hints));
     $('p_'+type+'_hint').textContent = PANEL_OPTS.coreNote[core] || '';
-    opts($('p_'+type+'_th'), PANEL_OPTS.thk[type+'|'+core], type === 'roof' ? 150 : 100);
+    opts($('p_'+type+'_th'), O.thk[type+'|'+core], type === 'roof' ? 150 : 100);
   });
-  opts($('p_wall_w'), PANEL_OPTS.widths.wall, 1000);
-  opts($('p_mt'), PANEL_OPTS.metals, 0.45); opts($('p_mb'), PANEL_OPTS.metals, 0.45);
-  const rb = $('p_ral_box');
-  if (!rb.children.length) {
-    rb.innerHTML = PANEL_OPTS.colors.map((c,k) => '<label title="RAL '+c[0]+' — '+c[1]+'"><input type="radio" name="p_ral" value="'+c[0]+'"'+(k===0?' checked':'')+'><i style="background:'+c[2]+'"></i></label>').join('');
+  opts($('p_wall_w'), O.widths.wall, 1000);
+  $('p_metal_box').classList.toggle('hidden', !O.metal);
+  $('p_metal_note').classList.toggle('hidden', !!O.metal);
+  $('p_metal_note').textContent = 'Металл — по стандарту завода' + (O.factory ? ' в г. ' + O.factory : '') + ', толщину уточним при звонке.';
+  if (O.metal) { opts($('p_mt'), O.metal, 0.45); opts($('p_mb'), O.metal, 0.45); }
+  const rb = $('p_ral_box'), sig = O.colors.map(c => c[0]).join(',');
+  if (rb.dataset.sig !== sig) {
+    const cur = radio('p_ral'), keep = O.colors.some(c => String(c[0]) === cur);
+    rb.dataset.sig = sig;
+    rb.innerHTML = O.colors.map((c,k) => '<label title="RAL '+c[0]+' — '+c[1]+'"><input type="radio" name="p_ral" value="'+c[0]+'"'+((keep ? String(c[0]) === cur : k===0)?' checked':'')+'><i style="background:'+c[2]+'"></i></label>').join('');
     rb.querySelectorAll('input').forEach(e => e.addEventListener('change', () => $('p_ral_hint').textContent = 'RAL ' + e.value + ' — ' + ralName(e.value)));
   }
   $('p_ral_hint').textContent = 'RAL ' + radio('p_ral') + ' — ' + ralName(radio('p_ral'));
@@ -1229,6 +1262,7 @@ function kmTo(a, b){ const r = Math.PI/180, dl = (b[1]-a[1])*r, dn = (b[2]-a[2])
   return Math.round(6371 * 2 * Math.asin(Math.sqrt(h)) * 1.25 / 10) * 10; }
 function nearestFactory(c){ return PANEL_FACTORIES.map(f => [f[0], kmTo([0, c[2], c[3]], f)]).sort((x, y) => x[1] - y[1])[0]; }
 function cityHint(){
+  panelOpts();
   const h = $('c_city_hint');
   if (!cityPick) { h.textContent = 'Выберите город из списка. Если объект в посёлке, укажите ближайший город.'; return; }
   if (tab !== 'panel') { h.textContent = cityLabel(cityPick); return; }

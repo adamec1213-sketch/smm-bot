@@ -8,6 +8,12 @@
     <button class="tab" data-t="mk">Металло&shy;конструкции<small>производство</small></button>
   </div>
 
+  <section class="card">
+    <h2>Где объект</h2>
+    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Липецк»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
+    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
+  </section>
+
   <!-- ===== АНГАР (поля листа «Ввод») ===== -->
   <div data-pane="angar">
   <section class="card">
@@ -92,7 +98,8 @@
   </section>
   <section class="card hidden" data-pane="panel">
     <h2>Металл и цвет</h2>
-    <div class="grid">
+    <div class="hint hidden" id="p_metal_note" style="margin:0 0 4px"></div>
+    <div class="grid" id="p_metal_box">
       <div><label class="f">Металл снаружи, мм</label><select id="p_mt"></select></div>
       <div><label class="f">Металл внутри, мм</label><select id="p_mb"></select></div>
     </div>
@@ -154,12 +161,6 @@
   </section>
 
   <!-- ===== КОНТАКТЫ ===== -->
-  <section class="card">
-    <h2>Где объект</h2>
-    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Липецк»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
-    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
-  </section>
-
   <section class="card">
     <h2>НДС в цене</h2>
     <div class="seg" id="vat_box">

@@ -288,7 +288,7 @@ function renderDeck(r, client, no, days, C) {
     const mmx = x => String(x).replace('.', ',') + ' мм';
     const pc = x => { const h = hex(x.ral); return '<div class="d-pc"><i class="sw" style="background:' + h[2] + '"></i><small>' + esc(x.kind.toUpperCase()) + ' ПАНЕЛИ</small>' +
       '<b class="big">' + nf(x.area) + ' м²</b><dl><dt>Утеплитель</dt><dd>' + esc(x.core) + '</dd><dt>Толщина</dt><dd>' + nf(x.thk) + ' мм</dd>' +
-      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + mmx(x.mTop) + ' / ' + mmx(x.mBot) + '</dd>' +
+      (x.kind === 'Стеновые' ? '<dt>Ширина</dt><dd>' + nf(x.width) + ' мм</dd>' : '') + '<dt>Металл</dt><dd>' + (x.mTop ? mmx(x.mTop) + ' / ' + mmx(x.mBot) : 'стандарт завода') + '</dd>' +
       '<dt>Цвет</dt><dd>RAL ' + esc(x.ral) + (h[1] ? ', ' + esc(h[1].toLowerCase()) : '') + '</dd></dl>' +
       '<div class="pr"><span>Цена за м²</span><b>' + rub(x.price) + '</b></div><div class="pr"><span>Сумма</span><b>' + rub(x.price * x.area) + '</b></div></div>'; };
     S.push(head('Ваш заказ') + '<div class="d-ord">' + r.panels.map(pc).join('') +
