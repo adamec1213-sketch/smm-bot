@@ -577,7 +577,6 @@ input.ro{opacity:.75;background:transparent}
         <div><label class="f">Двери, шт</label><input type="number" id="p_D" value="1" min="0" max="50" inputmode="numeric"></div>
         <div><label class="f">Окна, м² всего</label><input type="number" id="p_Win" value="0" min="0" max="5000" inputmode="decimal"></div>
       </div>
-      <label class="check" style="margin-top:14px"><input type="checkbox" id="p_flash" checked><span>Добавить фасонные элементы: отливы, углы, конёк, карнизные и торцевые планки, обрамление ворот, дверей и окон</span></label>
       <div class="hint" id="p_dims_hint"></div>
     </div>
     <div class="pblock" id="pb_wall">
@@ -1357,13 +1356,12 @@ function dimsApply(){
   if ($('p_wall_on').checked) parts.push('стены ' + fmt(d.wall) + ' м²');
   if ($('p_roof_on').checked) parts.push('кровля ' + fmt(d.roof) + ' м²');
   const t = (parts.length ? 'Получится: ' + parts.join(', ') : 'Отметьте стеновые или кровельные панели')
-    + ($('p_flash').checked && parts.length ? ', фасонных элементов около ' + fmt(d.flash) + ' м.п.' : '')
   ;
   $('p_dims_hint').textContent = t + (t.endsWith('.') ? ' ' : '. ') + 'Кровля двускатная, уклон 10 %, свес по торцам 0,5 м. Площади стен — за вычетом ворот, дверей и окон.';
 }
 document.querySelectorAll('input[name=p_mode]').forEach(e => e.addEventListener('change', dimsApply));
 ['p_L','p_B','p_H','p_G','p_GW','p_GH','p_D','p_Win'].forEach(id => $(id).addEventListener('input', dimsApply));
-['p_flash','p_wall_on','p_roof_on'].forEach(id => $(id).addEventListener('change', dimsApply));
+['p_wall_on','p_roof_on'].forEach(id => $(id).addEventListener('change', dimsApply));
 
 // ---------- Вкладки и подсказки ----------
 let tab = 'angar';
@@ -1404,7 +1402,7 @@ function params(){
       mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat'),
       geo: cityPick ? { city: cityPick[0], region: cityPick[1], lat: cityPick[2], lon: cityPick[3] } : null,
       ...(modeDims() ? (d => ({ dims: { L: d.L, B: d.B, H: d.H, gates: d.G, gw: d.GW, gh: d.GH, doors: d.D, win: d.Win },
-        flash: $('p_flash').checked ? '1' : '0', flashM: $('p_flash').checked ? d.flash : 0 }))(panelDims()) : { flash: '0' }) };
+        flash: '0' }))(panelDims()) : { flash: '0' }) };
   }
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
