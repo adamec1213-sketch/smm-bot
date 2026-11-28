@@ -259,8 +259,8 @@ function calcAngar_(p) {
 /** Заводы-поставщики: [город, широта, долгота]. Тот же список — в site/kp/panels.js (PANEL_FACTORIES).
  *  Прайс завода — лист «Панели <город>» (формат как у «Панели МП»). Пока листа нет — берётся «Панели МП». */
 const FACTORIES = [
-  ['Москва', 55.754, 37.620],
-  ['Санкт-Петербург', 59.939, 30.316],
+  ['Москва', 55.754, 37.620],               // лист «Панели Москва» — ждём прайс
+  ['Санкт-Петербург', 59.939, 30.316, 'Панели МП'],   // «Металл Престиж», СПб
   ['Липецк', 52.603, 39.571],
   ['Новосибирск', 55.028, 82.921]
 ];
@@ -274,9 +274,12 @@ function km_(lat1, lon1, lat2, lon2) {
 function factory_(geo) {
   const lat = Number(geo && geo.lat), lon = Number(geo && geo.lon);
   if (!isFinite(lat) || !isFinite(lon) || !lat || !lon) return null;
-  const f = FACTORIES.map(x => ({ city: x[0], km: km_(lat, lon, x[1], x[2]) })).sort((a, b) => a.km - b.km)[0];
+  // Берём ближайший завод, у которого в таблице есть лист с прайсом
   const ss = SpreadsheetApp.getActive();
-  f.sheet = ss.getSheetByName('Панели ' + f.city) ? 'Панели ' + f.city : 'Панели МП';
+  const list = FACTORIES.map(x => ({ city: x[0], sheet: x[3] || 'Панели ' + x[0], km: km_(lat, lon, x[1], x[2]) }))
+    .filter(x => ss.getSheetByName(x.sheet)).sort((a, b) => a.km - b.km);
+  if (!list.length) return null;
+  const f = list[0];
   f.to = String(geo.city || '').slice(0, 60);
   return f;
 }
