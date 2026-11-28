@@ -99,6 +99,40 @@ cityIn.addEventListener('keydown', e => {
 });
 cityList.addEventListener('mousedown', e => { const li = e.target.closest('li'); if (li) { e.preventDefault(); cityChoose(cityHits[+li.dataset.k]); } });
 
+// ---------- Панели по размерам здания: площади и фасонка (формулы листа «Расчёт» таблицы владельца) ----------
+// Двускатная кровля, уклон 10 % (5,71°), свес по торцам 0,5 м, без цоколя; фасонка +10 % на нахлёсты.
+function panelDims(){
+  const L = num('p_L'), B = num('p_B'), H = num('p_H'), G = Math.round(num('p_G')), GW = num('p_GW'), GH = num('p_GH'),
+        D = Math.round(num('p_D')), Win = num('p_Win');
+  const a = 5.71 * Math.PI / 180, PER = 2 * (L + B), LS = B / 2 / Math.cos(a);
+  const wall = Math.round(Math.max(0, PER * H + B * B * Math.tan(a) / 2 - G * GW * GH - Win - D * 0.9 * 2.1));
+  const roof = Math.round(2 * (L + 2 * 0.5) * LS);
+  const wOn = $('p_wall_on').checked, rOn = $('p_roof_on').checked;
+  let fl = 0;
+  if (wOn) fl += PER + 4 * H + G * (2 * (GH + 0.26) + 2 * (GW + 0.26)) + Win * 3.26 + D * 7.04;   // отлив, углы, обрамления
+  if (rOn) fl += 5 * 2 * L + 2 * (L + 1.06) + 2 * (L + 1.06) + 2 * 4 * LS;                           // карниз, конёк, закрывающая, торцевые
+  return { L, B, H, G, GW, GH, D, Win, wall, roof, flash: Math.ceil(fl * 1.1) };
+}
+function modeDims(){ return radio('p_mode') === 'dims'; }
+function dimsApply(){
+  const on = modeDims();
+  $('p_dims').classList.toggle('hidden', !on);
+  ['p_wall_area', 'p_roof_area'].forEach(id => { $(id).readOnly = on; $(id).classList.toggle('ro', on); });
+  if (!on) return;
+  const d = panelDims();
+  $('p_wall_area').value = d.wall; $('p_roof_area').value = d.roof;
+  const parts = [];
+  if ($('p_wall_on').checked) parts.push('стены ' + fmt(d.wall) + ' м²');
+  if ($('p_roof_on').checked) parts.push('кровля ' + fmt(d.roof) + ' м²');
+  const t = (parts.length ? 'Получится: ' + parts.join(', ') : 'Отметьте стеновые или кровельные панели')
+    + ($('p_flash').checked && parts.length ? ', фасонных элементов около ' + fmt(d.flash) + ' м.п.' : '')
+  ;
+  $('p_dims_hint').textContent = t + (t.endsWith('.') ? ' ' : '. ') + 'Кровля двускатная, уклон 10 %, свес по торцам 0,5 м. Площади стен — за вычетом ворот, дверей и окон.';
+}
+document.querySelectorAll('input[name=p_mode]').forEach(e => e.addEventListener('change', dimsApply));
+['p_L','p_B','p_H','p_G','p_GW','p_GH','p_D','p_Win'].forEach(id => $(id).addEventListener('input', dimsApply));
+['p_flash','p_wall_on','p_roof_on'].forEach(id => $(id).addEventListener('change', dimsApply));
+
 // ---------- Вкладки и подсказки ----------
 let tab = 'angar';
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
@@ -136,7 +170,9 @@ function params(){
     // type/core/thk/width/area — старый формат, на случай если в таблице ещё прежний код
     return { wall: w, roof: rf, type: first[0], core: first[1].core, thk: first[1].thk, width: first[1].width, area: first[1].area,
       mTop: $('p_mt').value, mBot: $('p_mb').value, ral: radio('p_ral'), mont: radio('p_mont'), deliv: radio('p_deliv'), vat: radio('vat'),
-      geo: cityPick ? { city: cityPick[0], region: cityPick[1], lat: cityPick[2], lon: cityPick[3] } : null };
+      geo: cityPick ? { city: cityPick[0], region: cityPick[1], lat: cityPick[2], lon: cityPick[3] } : null,
+      ...(modeDims() ? (d => ({ dims: { L: d.L, B: d.B, H: d.H, gates: d.G, gw: d.GW, gh: d.GH, doors: d.D, win: d.Win },
+        flash: $('p_flash').checked ? '1' : '0', flashM: $('p_flash').checked ? d.flash : 0 }))(panelDims()) : { flash: '0' }) };
   }
   return { kind: $('m_kind').value, t: num('m_t'), kmd: $('m_kmd').value, paint: radio('m_paint'), deliv: radio('m_deliv'), mont: radio('m_mont'), vat: radio('vat') };
 }
@@ -150,6 +186,7 @@ function check(p){
     const on = ['wall','roof'].filter(k => p[k].on === '1');
     if (!on.length) return 'Выберите стеновые или кровельные панели.';
     if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
+    if (p.dims && (p.dims.L < 3 || p.dims.B < 3 || p.dims.H < 2)) return 'Укажите размеры здания: длина и ширина от 3 м, высота от 2 м.';
     if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
   }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';

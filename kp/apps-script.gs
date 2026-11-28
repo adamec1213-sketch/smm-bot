@@ -401,15 +401,25 @@ function calcPanel_(p) {
       tripPrice = 0;
       delivNote = 'доставка до г. ' + fac.to + ' (' + trips + ' ' + plural_(trips, 'рейс', 'рейса', 'рейсов') + ') — рассчитаем отдельно';
     }
+    // Фасонные элементы: метры считает сайт по формулам листа «Расчёт», цены — строки «Сметы»
+    const flashM = p.flash === '1' ? Math.ceil(clamp_(num_(p.flashM), 0, 50000)) : 0;
+    if (flashM) {
+      items.push(['Фасонные элементы: отливы, углы, конёк, карнизные и торцевые планки, обрамления (ориентировочно)', flashM, 'м.п.', pr('Фасонные элементы, изготовление')]);
+      if (mont) items.push(['Монтаж фасонных элементов', flashM, 'м.п.', pr('Монтаж фасонных элементов')]);
+      excluded.splice(excluded.indexOf('фасонные элементы — по спецификации'), 1, 'точный состав фасонных элементов — по спецификации');
+    }
     if (deliv && tripPrice) items.push(['Доставка сэндвич-панелей' + (fac && fac.to ? ' по г. ' + fac.to : ''), trips, 'рейс', tripPrice]);
     if (delivNote) excluded.unshift(delivNote);
     const mm = x => String(x).replace('.', ',') + ' мм';
     const params = [];
     panels.forEach(x => params.push([x.kind + ' панели', x.core + ', ' + x.thk + ' мм, ' + x.area + ' м²']));
+    const dm = p.dims;
+    if (dm && num_(dm.L) && num_(dm.B) && num_(dm.H))
+      params.push(['Размеры здания (Д × Ш × В)', [dm.L, dm.B, dm.H].map(x => String(num_(x)).replace('.', ',')).join(' × ') + ' м']);
     params.push(['Металл снаружи / внутри', panels[0].mTop ? mm(panels[0].mTop) + ' / ' + mm(panels[0].mBot) : 'уточним при заказе'], ['Цвет снаружи', 'RAL ' + ral + (panels[0].color ? ' (' + panels[0].color + ')' : '')],
       ['Площадь всего', total + ' м²'], ['Монтаж', mont ? 'нужен' : 'только поставка'], ['Доставка', deliv ? 'нужна' : 'самовывоз'], ['НДС', vat]);
     return finish_({
-      kind: 'Сэндвич-панели', area: 0, items: items, panels: panels, mont: mont, trips: trips, panelArea: total,
+      kind: 'Сэндвич-панели', area: 0, items: items, panels: panels, mont: mont, trips: trips, panelArea: total, flashM: flashM,
       title: panels.map(x => x.kind.toLowerCase() + ' ' + x.thk + ' мм — ' + x.area + ' м²').join(', ').replace(/^./, c => c.toUpperCase()),
       params: params,
       supplier: fac ? fac.city + ' (' + fac.sheet + '), ~' + fac.km + ' км до объекта' : '',   // только для владельца: в ответ сайту не уходит

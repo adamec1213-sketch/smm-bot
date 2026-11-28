@@ -120,3 +120,5 @@ input.bad{border-color:var(--err)}
 .aclist li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 11px;border-radius:9px;cursor:pointer;font-size:15px;font-weight:600}
 .aclist li small{font-size:12px;font-weight:500;color:var(--mut);text-align:right}
 .aclist li:hover,.aclist li.on{background:var(--card2)}
+
+input.ro{opacity:.75;background:transparent}

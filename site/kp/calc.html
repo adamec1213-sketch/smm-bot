@@ -73,6 +73,29 @@
   <section class="card hidden" data-pane="panel">
     <h2>Сэндвич-панели</h2>
     <div class="hint" style="margin:-8px 0 14px">Можно выбрать стеновые и кровельные сразу — посчитаем в одном КП.</div>
+    <div class="seg" id="p_mode_box" style="margin-bottom:14px">
+      <label><input type="radio" name="p_mode" value="area" checked><span>Знаю площади</span></label>
+      <label><input type="radio" name="p_mode" value="dims"><span>Посчитать по размерам здания</span></label>
+    </div>
+    <div id="p_dims" class="hidden" style="margin-bottom:16px">
+      <div class="grid3">
+        <div><label class="f">Длина, м</label><input type="number" id="p_L" value="12" min="3" max="300" inputmode="decimal"></div>
+        <div><label class="f">Ширина, м</label><input type="number" id="p_B" value="8" min="3" max="100" inputmode="decimal"></div>
+        <div><label class="f">Высота стен, м</label><input type="number" id="p_H" value="4" min="2" max="20" inputmode="decimal"></div>
+      </div>
+      <div class="hint" style="margin:14px 0 6px;font-weight:700">Ворота</div>
+      <div class="grid3">
+        <div><label class="f">Количество</label><input type="number" id="p_G" value="1" min="0" max="50" inputmode="numeric"></div>
+        <div><label class="f">Ширина, м</label><input type="number" id="p_GW" value="3" min="1" max="12" inputmode="decimal"></div>
+        <div><label class="f">Высота, м</label><input type="number" id="p_GH" value="3" min="1" max="10" inputmode="decimal"></div>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <div><label class="f">Двери, шт</label><input type="number" id="p_D" value="1" min="0" max="50" inputmode="numeric"></div>
+        <div><label class="f">Окна, м² всего</label><input type="number" id="p_Win" value="0" min="0" max="5000" inputmode="decimal"></div>
+      </div>
+      <label class="check" style="margin-top:14px"><input type="checkbox" id="p_flash" checked><span>Добавить фасонные элементы: отливы, углы, конёк, карнизные и торцевые планки, обрамление ворот, дверей и окон</span></label>
+      <div class="hint" id="p_dims_hint"></div>
+    </div>
     <div class="pblock" id="pb_wall">
       <label class="ptog"><input type="checkbox" id="p_wall_on" checked><span>Стеновые панели</span></label>
       <div class="pbody">
