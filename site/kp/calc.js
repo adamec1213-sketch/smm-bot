@@ -82,14 +82,19 @@ function cityFind(){
   cityPick = RU_CITIES.find(c => cnorm(cityLabel(c)) === q) || null;
   const same = RU_CITIES.filter(c => cnorm(c[0]) === q);
   if (!cityPick && same.length === 1) cityPick = same[0];
-  cityHits = q.length < 2 || (cityPick && same.length <= 1 && cnorm(cityLabel(cityPick)) === q) ? [] :
-    RU_CITIES.filter(c => cnorm(c[0]).startsWith(q)).concat(RU_CITIES.filter(c => !cnorm(c[0]).startsWith(q) && cnorm(c[0]).includes(q))).slice(0, 8);
+  cityHits = (cityPick && same.length <= 1 && cnorm(cityLabel(cityPick)) === q) ? [] :
+    !q ? RU_CITIES.slice() :
+    RU_CITIES.filter(c => cnorm(c[0]).startsWith(q)).concat(RU_CITIES.filter(c => !cnorm(c[0]).startsWith(q) && cnorm(c[0]).includes(q)));
   cityAct = -1; cityDraw(); cityHint();
   if (cityPick) cityIn.classList.remove('bad');
 }
 function cityChoose(c){ cityIn.value = cityLabel(c); cityPick = c; cityHits = []; cityDraw(); cityHint(); cityIn.classList.remove('bad'); }
 cityIn.addEventListener('input', cityFind);
 cityIn.addEventListener('focus', () => { if (!cityPick) cityFind(); });
+cityIn.addEventListener('click', () => { if (!cityHits.length) { cityPick ? cityOpenAll() : cityFind(); } });
+function cityOpenAll(){ cityHits = RU_CITIES.slice(); cityAct = -1; cityDraw(); cityList.scrollTop = 0; }
+$('c_city_btn').addEventListener('mousedown', e => { e.preventDefault();
+  if (cityHits.length) { cityHits = []; cityDraw(); } else { cityIn.focus(); cityOpenAll(); } });
 cityIn.addEventListener('blur', () => setTimeout(() => { cityHits = []; cityDraw(); }, 150));
 cityIn.addEventListener('keydown', e => {
   if (!cityHits.length) return;
@@ -186,9 +191,10 @@ function check(p){
     if (!on.length) return 'Выберите стеновые или кровельные панели.';
     if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
     if (p.dims && (p.dims.L < 3 || p.dims.B < 3 || p.dims.H < 2)) return 'Укажите размеры здания: длина и ширина от 3 м, высота от 2 м.';
-    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
+
   }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
+  if (!cityPick) { cityIn.classList.add('bad'); cityIn.scrollIntoView({block: 'center', behavior: 'smooth'}); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }
   return '';
 }

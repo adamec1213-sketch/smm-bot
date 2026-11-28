@@ -122,3 +122,9 @@ input.bad{border-color:var(--err)}
 .aclist li:hover,.aclist li.on{background:var(--card2)}
 
 input.ro{opacity:.75;background:transparent}
+
+.req{color:#802028;font-weight:800}
+.cityac input{padding-right:44px}
+.accaret{position:absolute;right:4px;top:4px;bottom:4px;width:38px;border:0;background:transparent;cursor:pointer;border-radius:10px}
+.accaret::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;border-right:2px solid var(--gold,#A0742C);border-bottom:2px solid var(--gold,#A0742C);transform:translate(-50%,-70%) rotate(45deg)}
+.accaret:hover{background:var(--card2)}

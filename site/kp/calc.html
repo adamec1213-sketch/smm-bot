@@ -9,9 +9,9 @@
   </div>
 
   <section class="card">
-    <h2>Где объект</h2>
-    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Казань»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
-    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
+    <h2>Где объект <span class="req" title="Обязательное поле">*</span></h2>
+    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Выберите город" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list" required><button type="button" class="accaret" id="c_city_btn" aria-label="Показать все города" tabindex="-1"></button><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
+    <div class="hint" id="c_city_hint">Обязательное поле. В списке все города России. Если объект в посёлке, выберите ближайший город.</div>
   </section>
 
   <!-- ===== АНГАР (поля листа «Ввод») ===== -->

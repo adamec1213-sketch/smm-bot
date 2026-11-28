@@ -142,6 +142,12 @@ input.bad{border-color:var(--err)}
 
 input.ro{opacity:.75;background:transparent}
 
+.req{color:#802028;font-weight:800}
+.cityac input{padding-right:44px}
+.accaret{position:absolute;right:4px;top:4px;bottom:4px;width:38px;border:0;background:transparent;cursor:pointer;border-radius:10px}
+.accaret::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;border-right:2px solid var(--gold,#A0742C);border-bottom:2px solid var(--gold,#A0742C);transform:translate(-50%,-70%) rotate(45deg)}
+.accaret:hover{background:var(--card2)}
+
 /* ===== КП-презентация 16:9 (размеры в cqw: calc(1*var(--u)) = 1% ширины слайда) ===== */
 .deck{--u:1cqw;display:grid;gap:18px;--g:#C99A4B;--gd:#A0742C;--ink:#17150f;--mut:#6b665c;--bd:#ece5d6;--cream:#faf6ec}
 .slide{container-type:inline-size;position:relative;width:100%;aspect-ratio:16/9;background:#fff;color:var(--ink);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:Montserrat,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -493,9 +499,9 @@ input.ro{opacity:.75;background:transparent}
   </div>
 
   <section class="card">
-    <h2>Где объект</h2>
-    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Начните вводить город, например «Казань»" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list"><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
-    <div class="hint" id="c_city_hint">Выберите город из списка. Если объект в посёлке, укажите ближайший город.</div>
+    <h2>Где объект <span class="req" title="Обязательное поле">*</span></h2>
+    <div class="cityac"><input type="text" id="c_city" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Выберите город" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="c_city_list" required><button type="button" class="accaret" id="c_city_btn" aria-label="Показать все города" tabindex="-1"></button><ul id="c_city_list" class="aclist" role="listbox" hidden></ul></div>
+    <div class="hint" id="c_city_hint">Обязательное поле. В списке все города России. Если объект в посёлке, выберите ближайший город.</div>
   </section>
 
   <!-- ===== АНГАР (поля листа «Ввод») ===== -->
@@ -1313,14 +1319,19 @@ function cityFind(){
   cityPick = RU_CITIES.find(c => cnorm(cityLabel(c)) === q) || null;
   const same = RU_CITIES.filter(c => cnorm(c[0]) === q);
   if (!cityPick && same.length === 1) cityPick = same[0];
-  cityHits = q.length < 2 || (cityPick && same.length <= 1 && cnorm(cityLabel(cityPick)) === q) ? [] :
-    RU_CITIES.filter(c => cnorm(c[0]).startsWith(q)).concat(RU_CITIES.filter(c => !cnorm(c[0]).startsWith(q) && cnorm(c[0]).includes(q))).slice(0, 8);
+  cityHits = (cityPick && same.length <= 1 && cnorm(cityLabel(cityPick)) === q) ? [] :
+    !q ? RU_CITIES.slice() :
+    RU_CITIES.filter(c => cnorm(c[0]).startsWith(q)).concat(RU_CITIES.filter(c => !cnorm(c[0]).startsWith(q) && cnorm(c[0]).includes(q)));
   cityAct = -1; cityDraw(); cityHint();
   if (cityPick) cityIn.classList.remove('bad');
 }
 function cityChoose(c){ cityIn.value = cityLabel(c); cityPick = c; cityHits = []; cityDraw(); cityHint(); cityIn.classList.remove('bad'); }
 cityIn.addEventListener('input', cityFind);
 cityIn.addEventListener('focus', () => { if (!cityPick) cityFind(); });
+cityIn.addEventListener('click', () => { if (!cityHits.length) { cityPick ? cityOpenAll() : cityFind(); } });
+function cityOpenAll(){ cityHits = RU_CITIES.slice(); cityAct = -1; cityDraw(); cityList.scrollTop = 0; }
+$('c_city_btn').addEventListener('mousedown', e => { e.preventDefault();
+  if (cityHits.length) { cityHits = []; cityDraw(); } else { cityIn.focus(); cityOpenAll(); } });
 cityIn.addEventListener('blur', () => setTimeout(() => { cityHits = []; cityDraw(); }, 150));
 cityIn.addEventListener('keydown', e => {
   if (!cityHits.length) return;
@@ -1417,9 +1428,10 @@ function check(p){
     if (!on.length) return 'Выберите стеновые или кровельные панели.';
     if (on.some(k => !(p[k].area >= 10 && p[k].area <= 100000))) return 'Площадь панелей — от 10 м².';
     if (p.dims && (p.dims.L < 3 || p.dims.B < 3 || p.dims.H < 2)) return 'Укажите размеры здания: длина и ширина от 3 м, высота от 2 м.';
-    if (!p.geo) { cityIn.classList.add('bad'); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
+
   }
   if (tab === 'mk' && (p.t < 0.1 || p.t > 5000)) return 'Масса — от 0,1 т.';
+  if (!cityPick) { cityIn.classList.add('bad'); cityIn.scrollIntoView({block: 'center', behavior: 'smooth'}); return 'Выберите город объекта из списка: от него зависят цена и доставка.'; }
   if (!p.vat) { $('vat_box').classList.add('bad'); return 'Выберите: без НДС или с НДС 22 %.'; }
   return '';
 }
